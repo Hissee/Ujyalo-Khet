@@ -48,7 +48,7 @@ a{
         width: 50px;
         height: 50px;
     }
-    .intro{
+    .nav{
         flex-direction: column;
     }
 }

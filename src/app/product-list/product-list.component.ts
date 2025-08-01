@@ -11,7 +11,7 @@ export class ProductListComponent {
   products: IProduct[] = PRODUCTS;
 
   ngOnInit(){
-  console.log(this.products);
+  // console.log(this.products);
 
   }
 }

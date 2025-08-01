@@ -6,37 +6,41 @@ import { ProductListComponent } from './product-list/product-list.component';
 import { LoginComponent } from './login/login.component';
 import { ContactComponent } from './contact/contact.component';
 import { PagenotfoundComponent } from './pagenotfound/pagenotfound.component';
-
-
+import { ProductDetailsComponent } from './product-details/product-details.component';
 
 export const routes: Routes = [
-    {
-        path:  '',
-        pathMatch: 'full',
-        component: HomeComponent
-    },{
-        path:  'about',
-        component: AboutUsComponent
-    },
-    {
-        path: 'signup/Khetalo',
-        component: SignupKhetaloComponent
-    },
-    {
-        path: 'product-list',
-        component: ProductListComponent
-    },
-    {
-        path:'login',
-        component:LoginComponent
-    },
-    {
-        path:'contact',
-        component:ContactComponent
-    },
   {
-        path:'**',
-        component:PagenotfoundComponent
-    }
-];
+    path: '',
+    pathMatch: 'full',
+    component: HomeComponent,
+  },
+  {
+    path: 'about',
+    component: AboutUsComponent,
+  },
+  {
+    path: 'signup/Khetalo',
+    component: SignupKhetaloComponent,
+  },
+  {
+    path: 'product-list',
+    component: ProductListComponent,
+  },
+  {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'contact',
+    component: ContactComponent,
+  },
+  {
+  path: 'view-product/:id',  
+  component: ProductDetailsComponent,
+},
 
+  {
+    path: '**',
+    component: PagenotfoundComponent,
+  },
+];

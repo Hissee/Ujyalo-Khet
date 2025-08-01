@@ -1,5 +1,5 @@
 export interface IProduct{
-    id: string;
+    id: number;
     name: string;
     category: string;
     price: number;
@@ -15,7 +15,7 @@ export interface IProduct{
 
 export const PRODUCTS: IProduct[] = [
   {
-    id: '1',
+    id: 1,
     name: 'Fresh Tomatoes',
     category: 'Vegetables',
     price: 80,
@@ -29,7 +29,7 @@ export const PRODUCTS: IProduct[] = [
     organic: true
   },
   {
-    id: '2',
+    id: 2,
     name: 'Organic Cauliflower',
     category: 'Vegetables',
     price: 60,
@@ -43,7 +43,7 @@ export const PRODUCTS: IProduct[] = [
     organic: true
   },
   {
-    id: '3',
+    id: 3,
     name: 'Fresh Spinach',
     category: 'Leafy Greens',
     price: 40,
@@ -57,7 +57,7 @@ export const PRODUCTS: IProduct[] = [
     organic: false
   },
   {
-    id: '4',
+    id: 4,
     name: 'Red Apples',
     category: 'Fruits',
     price: 180,
@@ -71,7 +71,7 @@ export const PRODUCTS: IProduct[] = [
     organic: true
   },
   {
-    id: '5',
+    id: 5,
     name: 'Organic Carrots',
     category: 'Vegetables',
     price: 70,
@@ -85,7 +85,7 @@ export const PRODUCTS: IProduct[] = [
     organic: true
   },
   {
-    id: '6',
+    id: 6,
     name: 'Fresh Lettuce',
     category: 'Leafy Greens',
     price: 45,
@@ -99,7 +99,7 @@ export const PRODUCTS: IProduct[] = [
     organic: false
   },
   {
-    id: '7',
+    id: 7,
     name: 'Green Beans',
     category: 'Vegetables',
     price: 90,
@@ -113,7 +113,7 @@ export const PRODUCTS: IProduct[] = [
     organic: true
   },
   {
-    id: '8',
+    id: 8,
     name: 'Sweet Potatoes',
     category: 'Vegetables',
     price: 65,
@@ -127,7 +127,7 @@ export const PRODUCTS: IProduct[] = [
     organic: false
   },
   {
-    id: '9',
+    id: 9,
     name: 'Fresh Oranges',
     category: 'Fruits',
     price: 120,
@@ -141,7 +141,7 @@ export const PRODUCTS: IProduct[] = [
     organic: true
   },
   {
-    id: '10',
+    id: 10,
     name: 'Fresh Broccoli',
     category: 'Vegetables',
     price: 85,
@@ -155,7 +155,7 @@ export const PRODUCTS: IProduct[] = [
     organic: true
   },
   {
-    id: '11',
+    id: 11,
     name: 'Red Onions',
     category: 'Vegetables',
     price: 55,
@@ -169,7 +169,7 @@ export const PRODUCTS: IProduct[] = [
     organic: false
   },
   {
-    id: '12',
+    id: 12,
     name: 'Fresh Bananas',
     category: 'Fruits',
     price: 100,

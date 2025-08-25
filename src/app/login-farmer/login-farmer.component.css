@@ -8,8 +8,8 @@
 }
 
 .btn-primary {
-  background-color: #198754;
-  border-color: #198754;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .btn-primary:hover {

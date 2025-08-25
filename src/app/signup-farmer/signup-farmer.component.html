@@ -1,7 +1,7 @@
 <div class="container mt-5">
   <div class="card shadow p-4">
     <h2 class="text-center mb-4">Sign-Up As Farmer</h2>
-    <form>
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
 
       <!-- Name Fields -->
       <div class="mb-3">
@@ -35,9 +35,7 @@
         <label for="province" class="form-label">Province</label>
         <select class="form-select" id="province" formControlName="province" required>
           <option value="">Select Province</option>
-          @for(province of provinces;track $index){
-            <option [value]="province">{{province}}</option>
-          }
+          <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
         </select>
       </div>
 
@@ -53,7 +51,7 @@
       </div>
 
       <div class="text-center">
-        <!-- <button type="submit" class="btn btn-primary px-4" [disabled]="signupFormKhetalo.invalid">Submit</button> -->
+        <button type="submit" class="btn btn-primary px-4" [disabled]="signupForm.invalid">Submit</button>
       </div>
     </form>
   </div>

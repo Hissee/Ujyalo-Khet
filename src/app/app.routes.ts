@@ -5,8 +5,8 @@ import { ProductListComponent } from './product-list/product-list.component';
 import { LoginComponent } from './login/login.component';
 import { ContactComponent } from './contact/contact.component';
 import { PagenotfoundComponent } from './pagenotfound/pagenotfound.component';
-import { SignupFarmerComponent } from './signup-farmer/signup-farmer.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
+import { SignupFarmerComponent } from './signup-farmer/signup-farmer.component';
 
 export const routes: Routes = [
   {
@@ -19,8 +19,8 @@ export const routes: Routes = [
     component: AboutUsComponent,
   },
   {
-    path: 'signup/Khetalo',
-    component: SignupKhetaloComponent,
+    path: 'signup-farmer',
+    component: SignupFarmerComponent,
   },
   {
     path: 'product-list',

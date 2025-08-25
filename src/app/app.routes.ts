@@ -7,6 +7,7 @@ import { LoginComponent } from './login/login.component';
 import { ContactComponent } from './contact/contact.component';
 import { PagenotfoundComponent } from './pagenotfound/pagenotfound.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
+import { LoginFarmerComponent } from './login-farmer/login-farmer.component';
 
 export const routes: Routes = [
   {
@@ -35,10 +36,13 @@ export const routes: Routes = [
     component: ContactComponent,
   },
   {
-  path: 'view-product/:id',  
-  component: ProductDetailsComponent,
-},
-
+    path: 'view-product/:id',
+    component: ProductDetailsComponent,
+  },
+  {
+    path: 'login-farmer',
+    component: LoginFarmerComponent,
+  },
   {
     path: '**',
     component: PagenotfoundComponent,

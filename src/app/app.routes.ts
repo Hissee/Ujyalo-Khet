@@ -19,8 +19,9 @@ export const routes: Routes = [
         component: AboutUsComponent
     },
     {
-        path: 'signup/Khetalo',
+        path: 'signup-farmer',
         component: SignupKhetaloComponent
+
     },
     {
         path: 'product-list',

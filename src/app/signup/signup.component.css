@@ -1,0 +1,62 @@
+.container{
+    padding: 5vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+a{
+  text-decoration: none;
+  margin: 2px;
+  color: var(--secondary-color);
+}
+
+.login{
+    color: var(--primary-color);
+}
+.card {
+  border-radius: 15px;
+  margin: auto;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  gap: 15px;
+}
+
+.signup-container{
+    display: flex;
+    flex-direction: row;
+    margin: 0px;
+
+    div{
+        margin: 5px;
+    }
+}
+
+p{
+    width: 100%;
+    margin-bottom:25px ;
+}
+.vr-line{
+    width: 1px;
+    background: var(--primary-color);
+}
+.signup{
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* width: 60% */
+}
+
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: #146c43;
+  border-color: #146c43;
+}

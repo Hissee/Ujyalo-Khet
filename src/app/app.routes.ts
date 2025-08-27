@@ -1,3 +1,4 @@
+import { SignupConsunerComponent } from './signup-consuner/signup-consuner.component';
 import { Routes } from '@angular/router';
 import { AboutUsComponent } from './about-us/about-us.component';
 import { HomeComponent } from './home/home.component';
@@ -8,6 +9,7 @@ import { PagenotfoundComponent } from './pagenotfound/pagenotfound.component';
 import { ProductDetailsComponent } from './product-details/product-details.component';
 import { SignupFarmerComponent } from './signup-farmer/signup-farmer.component';
 import { LoginFarmerComponent } from './login-farmer/login-farmer.component';
+import { SignupComponent } from './signup/signup.component';
 
 
 export const routes: Routes = [
@@ -21,8 +23,16 @@ export const routes: Routes = [
     component: AboutUsComponent,
   },
   {
+    path: 'signup',
+    component: SignupComponent,
+  },
+  {
     path: 'signup-farmer',
     component: SignupFarmerComponent,
+  },
+  {
+    path: 'signup-consumer',
+    component: SignupConsunerComponent,
   },
   {
     path: 'product-list',

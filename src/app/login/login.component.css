@@ -1,0 +1,30 @@
+.container{
+    padding: 5vh;
+}
+a{
+  text-decoration: none;
+  margin: 2px;
+  color: var(--primary-color);
+}
+.card {
+  border-radius: 15px;
+  max-width: 400px;
+  margin: auto;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+}
+input{
+  width: 350px;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+
+.btn-primary:hover {
+  background-color: #146c43;
+  border-color: #146c43;
+}

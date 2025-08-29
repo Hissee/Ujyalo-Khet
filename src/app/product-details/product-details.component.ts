@@ -1,7 +1,7 @@
 import { NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IProduct, PRODUCTS } from '../product-list/Iproduct';
+import { IProduct} from '../product-list/Iproduct';
 
 @Component({
   selector: 'app-product-details',
@@ -11,7 +11,7 @@ import { IProduct, PRODUCTS } from '../product-list/Iproduct';
 })
 export class ProductDetailsComponent  {
 
-  products: IProduct[] = PRODUCTS;
+  products: IProduct[] = [];
   product:any;
 
 

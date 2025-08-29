@@ -1,7 +1,7 @@
 import { NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IProduct} from '../product-list/Iproduct';
+import { IProduct} from '../Iproduct';
 
 @Component({
   selector: 'app-product-details',

@@ -1,5 +1,5 @@
 import { RouterLink } from '@angular/router';
-import { IProduct,  } from './Iproduct';
+import { IProduct,  } from '../Iproduct';
 import {Component, inject, OnInit} from '@angular/core';
 import { NgIf } from '@angular/common';
 import {ProductListService} from './product-list.service';

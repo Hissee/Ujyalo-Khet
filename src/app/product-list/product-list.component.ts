@@ -1,7 +1,8 @@
 import { RouterLink } from '@angular/router';
-import { IProduct, PRODUCTS } from './Iproduct';
-import { Component } from '@angular/core';
+import { IProduct,  } from './Iproduct';
+import {Component, inject, OnInit} from '@angular/core';
 import { NgIf } from '@angular/common';
+import {ProductListService} from './product-list.service';
 
 @Component({
   selector: 'app-product-list',
@@ -9,12 +10,23 @@ import { NgIf } from '@angular/common';
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
-export class ProductListComponent {
-  products: IProduct[] = PRODUCTS;
+export class ProductListComponent implements OnInit{
+  products: IProduct[] = [];
+  service = inject(ProductListService)
 
   ngOnInit(){
-  // console.log(this.products);
-
+    this.service.listProducts()
+      .subscribe({
+        next: (data) => {
+          this.products = data;
+        },
+        error: (err) => {
+          console.log(err);
+        },
+        complete: () => {
+          console.log('complete');
+        }
+      })
   }
 }
 

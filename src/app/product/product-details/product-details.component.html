@@ -1,52 +1,4 @@
-<!-- <div class="col-md-6">
-  <h2 class="mb-3">{{ product.name }}</h2>
-  
-    <div class="col-md-6">
-    <img
-      [src]="product.image"
-      alt="{{ product.name }}"
-      class="img-fluid mb-3"
-    />
 
-    <div class="mb-3">
-      <p class="mb-4">
-        {{ product.description }}
-      </p>
-
-      <span>Harvest Date: {{ product.harvestDate }}</span>
-      <br />
-      <span>Farmer name:{{ product.farmerName }}</span>
-<br>
-      <span>organic:{{ product.organic}}</span>
-      <br>
-
-
-      <span class="h4 me-2">Rs {{ product.price }}</span>
-    </div>
-
-
-    <div class="mb-4">
-      <label for="quantity" class="form-label">Quantity:</label>
-      <input
-        type="number"
-        class="form-control"
-        id="quantity"
-        value="1"
-        min="1"
-        style="width: 80px"
-      />
-    </div>
-
-    <button class="btn btn-primary btn-lg mb-3 me-2">
-      <i class="bi bi-cart-plus"></i> Add to Cart
-    </button>
-    <button class="btn btn-outline-secondary btn-lg mb-3">
-      <i class="bi bi-heart"></i> Add to Wishlist
-    </button>
-  </div>
-  
-  
-</div> -->
 @if (product) {
   <div class="product-details-container">
     <div class="product-details-image">
@@ -84,7 +36,7 @@
       <button class="btn btn-primary btn-lg mb-3 me-2">
         <i class="bi bi-cart-plus"></i> Add to Cart
       </button>
-  
+
 
       <button class="btn btn-outline-secondary btn-secondary btn-lg mb-3">
         <i class="bi bi-heart"></i> Add to Wishlist

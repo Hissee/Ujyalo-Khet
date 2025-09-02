@@ -2,7 +2,8 @@ import { RouterLink } from '@angular/router';
 import { IProduct,  } from '../Iproduct';
 import {Component, inject, OnInit} from '@angular/core';
 import { NgIf } from '@angular/common';
-import {ProductListService} from './product-list.service';
+// import {ProductListService} from './product-list.service';
+import {ProductService} from '../product.service';
 
 @Component({
   selector: 'app-product-list',
@@ -12,7 +13,7 @@ import {ProductListService} from './product-list.service';
 })
 export class ProductListComponent implements OnInit{
   products: IProduct[] = [];
-  service = inject(ProductListService)
+  service = inject(ProductService)
 
   ngOnInit(){
     this.service.listProducts()

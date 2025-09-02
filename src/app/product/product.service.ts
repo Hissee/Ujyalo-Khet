@@ -6,7 +6,7 @@ import {IProduct} from './Iproduct';
 @Injectable({
   providedIn: 'root'
 })
-export class ProductListService {
+export class ProductService {
 
   private jsonUrl = 'assets/dummydata.json';
 
@@ -14,5 +14,9 @@ export class ProductListService {
 
   listProducts(): Observable<IProduct[]>{
     return this.http.get<IProduct[]>(this.jsonUrl);
+  }
+
+  getDetail(id: number): Observable<IProduct>{
+    return this.http.get<IProduct>(this.jsonUrl + '/' + id);
   }
 }

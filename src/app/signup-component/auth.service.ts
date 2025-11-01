@@ -32,7 +32,9 @@ export class AuthService {
         lastName: new FormControl('', Validators.required),
         phone: new FormControl('', [Validators.required, Validators.pattern('^[0-9]{10}$')]),
         email: new FormControl('', [Validators.required, Validators.email]),
-        province: new FormControl('', Validators.required),
+        province: new FormControl('', [Validators.required]),
+        city: new FormControl('', Validators.required),
+        street: new FormControl('', Validators.required),
         password: new FormControl('', [Validators.required, Validators.minLength(6)]),
         confirmPassword: new FormControl('', Validators.required)
       }

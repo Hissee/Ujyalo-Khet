@@ -1,8 +1,10 @@
+import { User } from './../IUser';
+import { AuthService } from './../auth.service';
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {AuthService} from '../auth.service';
-import {User} from '../IUser';
+// import {AuthService} from '../auth.service';
+// import {User} from '../IUser';
 
 @Component({
   selector: 'app-signup-consumer',

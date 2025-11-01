@@ -1,4 +1,3 @@
-<script src="signup-farmer.component.ts"></script>
 <div class="container mt-5">
   <div class="card shadow p-4">
     <h2 class="text-center mb-4">Sign-Up As Farmer</h2>
@@ -10,49 +9,100 @@
         <div class="row g-2">
           <div class="col-md-4">
             <input type="text" class="form-control" formControlName="firstName" placeholder="First Name" required>
+            @if (signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched) {
+              <small class="text-danger">First name is required</small>
+            }
           </div>
           <div class="col-md-4">
             <input type="text" class="form-control" formControlName="middleName" placeholder="Middle Name">
           </div>
           <div class="col-md-4">
             <input type="text" class="form-control" formControlName="lastName" placeholder="Last Name" required>
+            @if (signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched) {
+              <small class="text-danger">Last name is required</small>
+            }
           </div>
         </div>
       </div>
 
       <!-- Contact -->
       <div class="mb-3">
-        <label for="phoneNumber" class="form-label">Phone Number</label>
-        <input type="tel" class="form-control" id="phoneNumber" formControlName="phoneNumber" required>
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="tel" class="form-control" id="phone" formControlName="phone" placeholder="10-digit phone number" required>
+        @if (signupForm.get('phone')?.invalid && signupForm.get('phone')?.touched) {
+          <small class="text-danger">Valid 10-digit phone number is required</small>
+        }
       </div>
 
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
-        <input type="email" class="form-control" id="email" formControlName="email" required>
+        <input type="email" class="form-control" id="email" formControlName="email" placeholder="your@email.com" required>
+        @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
+          <small class="text-danger">Valid email is required</small>
+        }
       </div>
 
-      <!-- Province Select -->
+      <!-- Address -->
       <div class="mb-3">
         <label for="province" class="form-label">Province</label>
         <select class="form-select" id="province" formControlName="province" required>
           <option value="">Select Province</option>
-          <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+          @for (province of provinces; track province) {
+            <option [value]="province">{{ province }}</option>
+          }
         </select>
+        @if (signupForm.get('province')?.invalid && signupForm.get('province')?.touched) {
+          <small class="text-danger">Province is required</small>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="city" class="form-label">City</label>
+        <input type="text" class="form-control" id="city" formControlName="city" placeholder="City" required>
+        @if (signupForm.get('city')?.invalid && signupForm.get('city')?.touched) {
+          <small class="text-danger">City is required</small>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="street" class="form-label">Street Address</label>
+        <input type="text" class="form-control" id="street" formControlName="street" placeholder="Street address" required>
+        @if (signupForm.get('street')?.invalid && signupForm.get('street')?.touched) {
+          <small class="text-danger">Street address is required</small>
+        }
       </div>
 
       <!-- Password -->
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="password" formControlName="password" required>
+        <input type="password" class="form-control" id="password" formControlName="password" placeholder="Minimum 6 characters" required>
+        @if (signupForm.get('password')?.invalid && signupForm.get('password')?.touched) {
+          <small class="text-danger">Password must be at least 6 characters</small>
+        }
       </div>
 
       <div class="mb-4">
         <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" required>
+        <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" placeholder="Confirm your password" required>
+        @if (signupForm.hasError('mismatch') && signupForm.get('confirmPassword')?.touched) {
+          <small class="text-danger">Passwords do not match</small>
+        }
       </div>
 
+      @if (successMessage) {
+        <div class="alert alert-success mb-3" role="alert">
+          {{ successMessage }}
+        </div>
+      }
+
+      @if (errorMessage) {
+        <div class="alert alert-danger mb-3" role="alert">
+          {{ errorMessage }}
+        </div>
+      }
+
       <div class="text-center">
-        <button type="submit" class="btn btn-primary px-4" [disabled]="signupForm.invalid">Submit</button>
+        <button type="submit" class="btn btn-success px-4" [disabled]="signupForm.invalid">Submit</button>
       </div>
     </form>
   </div>

@@ -4,8 +4,8 @@ export class Endpoint {
   public static readonly API_VERSION: string = 'api/';
 
   // Auth
-  public static readonly SIGNUP = Endpoint.API_BASE + Endpoint.API_VERSION + 'signup';
-  // public static readonly SIGNUP_FARMER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/signup/farmer';
+  public static readonly SIGNUP_CUSTOMER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/signup/customer';
+  public static readonly SIGNUP_FARMER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/signup/farmer';
   public static readonly LOGIN = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/login';
 
   // Products

@@ -1,23 +1,33 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import {Endpoint} from '../const/end-point';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  passwordMatchValidator(form: FormGroup) {
-    return form.get('password')!.value === form.get('confirmPassword')!.value
-      ? null
-      : { mismatch: true };
+  passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const formGroup = control as FormGroup;
+    const password = formGroup.get('password');
+    const confirmPassword = formGroup.get('confirmPassword');
+    
+    if (!password || !confirmPassword) {
+      return null;
+    }
+    
+    return password.value === confirmPassword.value ? null : { mismatch: true };
   }
 
   constructor(private http: HttpClient) {}
 
-  signup(data: any): Observable<any> {
-    return this.http.post(Endpoint.SIGNUP, data);
+  signupCustomer(data: any): Observable<any> {
+    return this.http.post(Endpoint.SIGNUP_CUSTOMER, data);
+  }
+
+  signupFarmer(data: any): Observable<any> {
+    return this.http.post(Endpoint.SIGNUP_FARMER, data);
   }
 
   login(data: any): Observable<any> {
@@ -37,7 +47,8 @@ export class AuthService {
         street: new FormControl('', Validators.required),
         password: new FormControl('', [Validators.required, Validators.minLength(6)]),
         confirmPassword: new FormControl('', Validators.required)
-      }
+      },
+      { validators: this.passwordMatchValidator }
     );
   }
 }

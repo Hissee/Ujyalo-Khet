@@ -1,5 +1,6 @@
 export interface IProduct{
-    id: number;
+    id: number | string; // Can be number (for dummy data) or string (MongoDB _id)
+    _id?: string; // MongoDB ObjectId as string
     name: string;
     category: string;
     price: number;

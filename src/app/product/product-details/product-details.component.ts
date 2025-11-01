@@ -35,18 +35,20 @@ export class ProductDetailsComponent implements OnInit{
 
   ngOnInit(){
     const productId = this.route.snapshot.paramMap.get('id');
-    this.service.listProducts()
-      .subscribe({
-        next: (data) => {
-          this.products = data;
-          this.product = this.products.find(p => p.id === Number(productId));
-          console.log(this.product);
-        },
-        error: (err) => {
-          console.log(err);
-        },
-        complete: () => {}
-      })
+    if (productId) {
+      // Use the new API method to fetch product by ID directly
+      this.service.getProductById(productId)
+        .subscribe({
+          next: (data) => {
+            this.product = data;
+            console.log('Product loaded:', this.product);
+          },
+          error: (err) => {
+            console.error('Error loading product:', err);
+            this.product = null;
+          }
+        });
+    }
   }
 
 }

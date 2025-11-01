@@ -55,33 +55,43 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
+    }
+
+    // Validate password match
+    if (this.userForm.hasError('mismatch')) {
+      this.errorMessage = 'Passwords do not match';
+      return;
+    }
 
     this.successMessage = '';
     this.errorMessage = '';
-    const user:User = {
+    
+    const user = {
       firstName: this.userForm.get('firstName')?.value,
-      middleName: this.userForm.get('middleName')?.value,
+      middleName: this.userForm.get('middleName')?.value || '',
       lastName: this.userForm.get('lastName')?.value,
       email: this.userForm.get('email')?.value,
       phone: this.userForm.get('phone')?.value,
-      role: 'consumer',
       province: this.userForm.get('province')?.value,
       city: this.userForm.get('city')?.value,
       street: this.userForm.get('street')?.value,
       password: this.userForm.get('password')?.value,
     };
-    console.log(user);
+    
+    console.log('Signup data:', user);
 
-
-
-    this.service.signup(user)
+    this.service.signupCustomer(user)
       .subscribe({
         next: (res: any) => {
           this.successMessage = res.message || 'Signup successful!';
-          this.formData = { firstName: '', middleName: '', lastName: '', email: '', phone: '', province: '', city: '', street: '', password: '', role: 'consumer' };
+          this.userForm.reset();
         },
         error: (err) => {
           this.errorMessage = err.error?.message || 'Signup failed. Please try again.';
+          console.error('Signup error:', err);
         }
       });
   }

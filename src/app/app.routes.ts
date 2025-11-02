@@ -18,6 +18,7 @@ import { OrderListComponent } from './order/order-list/order-list.component';
 import { OrderDetailComponent } from './order/order-detail/order-detail.component';
 import { UpdateProductComponent } from './product/update-product/update-product.component';
 import { AddProductComponent } from './product/add-product/add-product.component';
+import { NotificationComponent } from './notification/notification.component';
 
 
 export const routes: Routes = [
@@ -93,6 +94,10 @@ export const routes: Routes = [
   {
     path: 'orders/:id',
     component: OrderDetailComponent,
+  },
+  {
+    path: 'notifications',
+    component: NotificationComponent,
   },
   {
     path: '**',

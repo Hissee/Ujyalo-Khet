@@ -9,9 +9,9 @@
   <nav class="nav-links">
     <!-- Home - Only visible if not logged in as farmer -->
     @if (!isLoggedIn || (isLoggedIn && user?.role !== 'farmer')) {
-      <a routerLink="./" class="nav-link-item">
-        <i class="bi bi-house"></i> Home
-      </a>
+    <a routerLink="./" class="nav-link-item">
+      <i class="bi bi-house"></i> Home
+    </a>
     }
 
     <!-- Not logged in: Show Signup and Login -->
@@ -37,12 +37,12 @@
       }
 
       <!-- Notifications -->
-      <button class="nav-link-item notification-btn" type="button" (click)="toggleUserMenu()">
+      <a routerLink="./notifications" class="nav-link-item notification-btn">
         <i class="bi bi-bell"></i> Notifications
         @if (notificationCount > 0) {
           <span class="notification-badge">{{ notificationCount }}</span>
         }
-      </button>
+      </a>
 
       <!-- User Account Menu -->
       <div class="user-menu-container" (click)="$event.stopPropagation()">

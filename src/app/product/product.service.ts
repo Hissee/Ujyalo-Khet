@@ -52,6 +52,11 @@ export class ProductService {
       }
     }
     
+    // Ensure images array contains only valid URLs (not base64)
+    const validImages = (product.images || []).filter((img: string) => {
+      return img && (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:'));
+    });
+    
     return {
       id: mongoId, // Use MongoDB _id string for routing
       _id: mongoId, // Preserve original MongoDB _id
@@ -59,7 +64,8 @@ export class ProductService {
       category: product.category || 'general',
       price: product.price || 0,
       quantity: product.quantity || 0,
-      image: product.images && product.images.length > 0 ? product.images[0] : '',
+      image: validImages.length > 0 ? validImages[0] : '',
+      images: validImages, // Preserve full images array
       location: product.location || '', // Use location if available
       farmerId: product.farmerId ? (typeof product.farmerId === 'object' ? product.farmerId.toString() : String(product.farmerId)) : '',
       farmerName: product.farmerName || '', // Use farmerName if available (might come from populated query)

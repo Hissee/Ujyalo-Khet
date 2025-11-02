@@ -159,10 +159,29 @@ export class ProductListComponent implements OnInit, OnDestroy {
     return Array.from({ length: this.totalSlides }, (_, i) => i);
   }
 
+  getProductImage(product: IProduct): string {
+    // Prefer images array with URLs
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      const urlImage = product.images.find((img: string) => 
+        img && (img.startsWith('http://') || img.startsWith('https://'))
+      );
+      if (urlImage) return urlImage;
+      // Fall back to first image if no URL found
+      return product.images[0];
+    }
+    
+    // Fall back to image property
+    if (product.image) {
+      return product.image;
+    }
+    
+    return 'https://via.placeholder.com/300x200?text=No+Image';
+  }
+
   handleImageError(event: Event) {
     const img = event.target as HTMLImageElement;
     if (img) {
-      img.src = 'assets/placeholder.png';
+      img.src = 'https://via.placeholder.com/300x200?text=No+Image';
     }
   }
 

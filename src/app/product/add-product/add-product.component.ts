@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FarmerService } from '../../services/farmer.service';
+import { ImageUploadService } from '../../services/image-upload.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-product',
@@ -20,14 +23,17 @@ export class AddProductComponent {
     'fruits', 'vegetables', 'grains', 'dairy', 'herbs', 'spices', 'other'
   ];
   
-  imageUrls: string[] = [];
+  imageUrls: string[] = []; // Store image URLs (from Imgur or direct URLs)
   newImageUrl: string = '';
   uploadingImages = false;
+  uploadProgress: { [key: number]: number } = {};
+  filesToUpload: File[] = [];
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private farmerService: FarmerService
+    private farmerService: FarmerService,
+    private imageUploadService: ImageUploadService
   ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -43,22 +49,39 @@ export class AddProductComponent {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.uploadingImages = true;
+      const files = Array.from(input.files).filter(file => file.type.startsWith('image/'));
       
-      Array.from(input.files).forEach((file) => {
-        if (file.type.startsWith('image/')) {
-          this.convertFileToBase64(file, 
-            () => {
-              this.uploadingImages = false;
-            },
-            (error) => {
-              console.error('Error reading file:', error);
-              this.error = error;
-              this.uploadingImages = false;
-            }
-          );
-        } else {
-          this.error = 'Please select only image files';
+      if (files.length === 0) {
+        this.error = 'Please select only image files';
+        return;
+      }
+
+      this.uploadingImages = true;
+      this.error = null;
+
+      // Upload files to Imgur
+      const uploadPromises = files.map((file, index) => {
+        return this.imageUploadService.uploadToImgur(file).pipe(
+          catchError(err => {
+            console.error(`Error uploading ${file.name}:`, err);
+            this.error = `Failed to upload ${file.name}. Please try a direct URL instead.`;
+            return of(null);
+          })
+        );
+      });
+
+      forkJoin(uploadPromises).subscribe({
+        next: (urls) => {
+          const successfulUrls = urls.filter(url => url !== null) as string[];
+          this.imageUrls.push(...successfulUrls);
+          this.uploadingImages = false;
+          if (successfulUrls.length < files.length) {
+            this.error = `Successfully uploaded ${successfulUrls.length} of ${files.length} images. Some failed.`;
+          }
+        },
+        error: (err) => {
+          console.error('Error uploading images:', err);
+          this.error = 'Failed to upload images. Please try using direct URLs instead.';
           this.uploadingImages = false;
         }
       });
@@ -67,22 +90,33 @@ export class AddProductComponent {
     }
   }
 
-  convertFileToBase64(file: File, onSuccess: () => void, onError: (error: string) => void): void {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result && typeof reader.result === 'string') {
-        this.imageUrls.push(reader.result);
-        onSuccess();
-      }
-    };
-    reader.onerror = () => onError('Failed to read file');
-    reader.readAsDataURL(file);
-  }
-
   addImageUrl(): void {
-    if (this.newImageUrl.trim()) {
-      this.imageUrls.push(this.newImageUrl.trim());
-      this.newImageUrl = '';
+    const url = this.newImageUrl.trim();
+    if (url) {
+      if (this.imageUploadService.isValidImageUrl(url)) {
+        // If it's a Google Photos or Google Drive link, convert it if needed
+        if (this.imageUploadService.isGooglePhotosLink(url) || this.imageUploadService.isGoogleDriveLink(url)) {
+          this.imageUploadService.getDirectImageUrl(url).subscribe({
+            next: (convertedUrl) => {
+              this.imageUrls.push(convertedUrl);
+              this.newImageUrl = '';
+              this.error = null;
+            },
+            error: () => {
+              // Even if conversion fails, try adding the original URL
+              this.imageUrls.push(url);
+              this.newImageUrl = '';
+              this.error = null;
+            }
+          });
+        } else {
+          this.imageUrls.push(url);
+          this.newImageUrl = '';
+          this.error = null;
+        }
+      } else {
+        this.error = 'Please enter a valid image URL (http:// or https://). Supported: Google Photos, Imgur, Google Drive, Dropbox, etc.';
+      }
     }
   }
 
@@ -100,9 +134,15 @@ export class AddProductComponent {
     this.error = null;
     this.successMessage = '';
 
+    // Filter out any base64 data URLs and only keep actual URLs
+    const validImageUrls = this.imageUrls.filter(url => {
+      // Remove base64 data URLs (if any) and keep only http/https URLs
+      return url.startsWith('http://') || url.startsWith('https://');
+    });
+
     const productData = {
       ...this.productForm.value,
-      images: this.imageUrls,
+      images: validImageUrls, // Store only URLs, not base64
       price: parseFloat(this.productForm.value.price),
       quantity: parseFloat(this.productForm.value.quantity)
     };

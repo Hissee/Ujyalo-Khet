@@ -6,6 +6,7 @@ export interface IProduct{
     price: number;
     quantity:number;
     image: string;
+    images?: string[]; // Array of image URLs
     location: string;
     farmerId: string;
     farmerName: string;

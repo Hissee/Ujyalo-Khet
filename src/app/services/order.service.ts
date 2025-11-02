@@ -31,6 +31,8 @@ export interface Order {
     productId: any;
     quantity: number;
     price: number;
+    productName?: string;  // Product snapshot stored in order
+    productImage?: string; // Product image snapshot stored in order
   }>;
   totalAmount: number;
   status: string;

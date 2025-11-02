@@ -151,19 +151,21 @@
                 </div>
 
                 <!-- URL Input -->
-                <div class="input-group mb-2">
-                  <input
-                    type="url"
-                    class="form-control"
-                    placeholder="Or enter image URL"
-                    [(ngModel)]="newImageUrl"
-                    [ngModelOptions]="{standalone: true}">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    (click)="addImageUrl()">
-                    Add URL
-                  </button>
+                <div class="mb-2">
+                  <div class="input-group">
+                    <input
+                      type="url"
+                      class="form-control"
+                      placeholder="Or paste image URL"
+                      [(ngModel)]="newImageUrl"
+                      [ngModelOptions]="{standalone: true}">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      (click)="addImageUrl()">
+                      <i class="bi bi-link-45deg"></i> Add URL
+                    </button>
+                  </div>
                 </div>
 
                 <!-- Image Previews -->

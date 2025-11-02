@@ -32,4 +32,13 @@ export class Endpoint {
     Endpoint.API_BASE + Endpoint.API_VERSION + `farmer/orders/${orderId}/status`;
   public static readonly GET_CURRENT_USER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/me';
   public static readonly UPDATE_PROFILE = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/profile';
+
+  // Notifications
+  public static readonly GET_NOTIFICATIONS = Endpoint.API_BASE + Endpoint.API_VERSION + 'notifications';
+  public static readonly GET_UNREAD_COUNT = Endpoint.API_BASE + Endpoint.API_VERSION + 'notifications/unread-count';
+  public static readonly MARK_NOTIFICATION_READ = (id: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `notifications/${id}/read`;
+  public static readonly MARK_ALL_NOTIFICATIONS_READ = Endpoint.API_BASE + Endpoint.API_VERSION + 'notifications/read-all';
+  public static readonly DELETE_NOTIFICATION = (id: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `notifications/${id}`;
 }

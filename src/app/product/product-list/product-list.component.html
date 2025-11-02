@@ -109,8 +109,8 @@
                   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <div class="product-card h-100" (click)="navigateToProduct(product.id)">
                       <div class="product-image-wrapper">
-                        @if (product.image) {
-                          <img [src]="product.image" class="product-image" [alt]="product.name" 
+                        @if (getProductImage(product)) {
+                          <img [src]="getProductImage(product)" class="product-image" [alt]="product.name" 
                                (error)="handleImageError($event)">
                         } @else {
                           <div class="product-image-placeholder">

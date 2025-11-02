@@ -80,6 +80,27 @@ export class ProductDetailsComponent implements OnInit{
     }
   }
 
+  getProductImage(): string {
+    if (!this.product) return 'https://via.placeholder.com/400x400?text=No+Image';
+    
+    // Prefer images array with URLs
+    if (this.product.images && Array.isArray(this.product.images) && this.product.images.length > 0) {
+      const urlImage = this.product.images.find((img: string) => 
+        img && (img.startsWith('http://') || img.startsWith('https://'))
+      );
+      if (urlImage) return urlImage;
+      // Fall back to first image if no URL found
+      return this.product.images[0];
+    }
+    
+    // Fall back to image property
+    if (this.product.image) {
+      return this.product.image;
+    }
+    
+    return 'https://via.placeholder.com/400x400?text=No+Image';
+  }
+
   updateQuantity(event: Event): void {
     const input = event.target as HTMLInputElement;
     const quantity = parseInt(input.value, 10);
@@ -181,4 +202,10 @@ export class ProductDetailsComponent implements OnInit{
     this.router.navigate(['/cart']);
   }
 
+  handleImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      img.src = 'https://via.placeholder.com/400x400?text=No+Image';
+    }
+  }
 }

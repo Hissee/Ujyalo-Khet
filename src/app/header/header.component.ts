@@ -3,6 +3,7 @@ import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { CartService } from '../cart/cart.service';
+import { NotificationService } from '../services/notification.service';
 
 @Component({
   selector: 'app-header',
@@ -23,7 +24,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +49,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.checkAuthStatus();
       });
+
+    // Subscribe to notification count
+    this.notificationService.unreadCount$.subscribe(count => {
+      this.notificationCount = count;
+    });
+
+    // Load initial notification count
+    if (this.isLoggedIn) {
+      this.loadNotificationCount();
+    }
   }
 
   ngOnDestroy(): void {
@@ -69,11 +81,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (userStr) {
       try {
         this.user = JSON.parse(userStr);
+        // Load notification count when logged in
+        this.loadNotificationCount();
       } catch (e) {
         this.user = null;
       }
     } else {
       this.user = null;
+      this.notificationCount = 0;
+    }
+  }
+
+  loadNotificationCount(): void {
+    if (this.isLoggedIn) {
+      this.notificationService.getUnreadCount().subscribe({
+        next: (count) => {
+          this.notificationService.updateUnreadCount(count);
+        },
+        error: (err) => {
+          console.error('Error loading notification count:', err);
+        }
+      });
     }
   }
 

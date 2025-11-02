@@ -80,41 +80,64 @@ export class OrderDetailComponent implements OnInit {
       return;
     }
 
-    products.forEach((item) => {
+    products.forEach((item: any) => {
       const productId = typeof item.productId === 'object' && item.productId.toString
         ? item.productId.toString()
         : String(item.productId);
       
-      this.productService.getProductById(productId).subscribe({
-        next: (product) => {
-          this.orderProducts.push({
-            productId: productId,
-            quantity: item.quantity,
-            price: item.price,
-            productName: product.name,
-            productImage: product.image
-          });
-          loadedCount++;
-          if (loadedCount === totalProducts) {
-            this.loading = false;
-          }
-        },
-        error: (err) => {
-          console.error('Error loading product:', err);
-          // Add product without details if fetch fails
-          this.orderProducts.push({
-            productId: productId,
-            quantity: item.quantity,
-            price: item.price,
-            productName: 'Product not available',
-            productImage: ''
-          });
-          loadedCount++;
-          if (loadedCount === totalProducts) {
-            this.loading = false;
-          }
+      // PRIORITY 1: Use stored product snapshot from order (new orders have this)
+      // This ensures product names show even if product is deleted or sold out
+      if (item.productName && item.productName.trim()) {
+        this.orderProducts.push({
+          productId: productId,
+          quantity: item.quantity,
+          price: item.price,
+          productName: item.productName.trim(),
+          productImage: (item.productImage || item.image || '').trim()
+        });
+        loadedCount++;
+        if (loadedCount === totalProducts) {
+          this.loading = false;
         }
-      });
+      } 
+      // PRIORITY 2: Try to fetch product details (for older orders without snapshot)
+      // This will work even if product quantity is 0 or product is sold out
+      else {
+        this.productService.getProductById(productId).subscribe({
+          next: (product) => {
+            // Successfully fetched product - use its name regardless of quantity
+            this.orderProducts.push({
+              productId: productId,
+              quantity: item.quantity,
+              price: item.price,
+              productName: product.name || `Product (ID: ${productId.slice(-8)})`,
+              productImage: (product.images && product.images.length > 0) 
+                ? product.images[0] 
+                : (product.image || '')
+            });
+            loadedCount++;
+            if (loadedCount === totalProducts) {
+              this.loading = false;
+            }
+          },
+          error: (err) => {
+            console.error('Error loading product:', productId, err);
+            // PRIORITY 3: If fetch fails, still show something useful with product ID
+            // This handles cases where product was deleted
+            this.orderProducts.push({
+              productId: productId,
+              quantity: item.quantity,
+              price: item.price,
+              productName: `Product (ID: ${productId.slice(-8)})`,
+              productImage: ''
+            });
+            loadedCount++;
+            if (loadedCount === totalProducts) {
+              this.loading = false;
+            }
+          }
+        });
+      }
     });
   }
 

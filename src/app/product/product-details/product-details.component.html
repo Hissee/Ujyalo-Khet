@@ -1,48 +1,110 @@
-
-@if (product) {
-  <div class="product-details-container">
-    <div class="product-details-image">
-      <img
-        [src]="product.image"
-        alt="{{ product.name }}"
-        class="img-fluid mb-3"
-      />
+@if (loading) {
+  <div class="container my-4">
+    <div class="text-center">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading product details...</p>
     </div>
-
-    <div class="product-details-info">
-      <h2 class="mb-3">{{ product.name }}</h2>
-
-      <p class="mb-4">
-        {{ product.description }}
-      </p>
-
-      <span>Harvest Date: {{ product.harvestDate }}</span>
-      <span>Farmer Name: {{ product.farmerName }}</span>
-      <span>Organic: {{ product.organic }}</span>
-      <span class="h4 me-2">Rs {{ product.price }}</span>
-
-      <div class="mb-4 mt-3">
-        <label for="quantity" class="form-label">Quantity:</label>
-        <input
-          type="number"
-          class="form-control"
-          id="quantity"
-          value="1"
-          min="1"
-          style="width: 80px"
+  </div>
+} @else if (error) {
+  <div class="container my-4">
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Error</h4>
+      <p>{{ error }}</p>
+    </div>
+  </div>
+} @else if (product) {
+  <div class="container my-4">
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <img
+          [src]="product.image"
+          alt="{{ product.name }}"
+          class="img-fluid rounded shadow"
         />
       </div>
 
-      <button class="btn btn-primary btn-lg mb-3 me-2">
-        <i class="bi bi-cart-plus"></i> Add to Cart
-      </button>
+      <div class="col-md-6">
+        <div class="product-details-info">
+          <!-- Product Name -->
+          <h1 class="mb-4">{{ product.name }}</h1>
 
+          <!-- Price -->
+          <div class="mb-3">
+            <h3 class="text-primary">Rs {{ product.price }}</h3>
+          </div>
 
-      <button class="btn btn-outline-secondary btn-secondary btn-lg mb-3">
-        <i class="bi bi-heart"></i> Add to Wishlist
-      </button>
+          <!-- Quantity Available -->
+          <div class="mb-3">
+            <strong>Quantity Available:</strong>
+            <span class="badge bg-success ms-2 fs-6">{{ product.quantity }}</span>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <h5>Description</h5>
+            <p class="text-muted">{{ product.description }}</p>
+          </div>
+
+          <!-- Harvest Date -->
+          <div class="mb-3">
+            <strong>Harvested Date:</strong>
+            <span class="ms-2">{{ product.harvestDate || 'Not specified' }}</span>
+          </div>
+
+          <!-- Additional Info (if available) -->
+          @if (product.category) {
+            <div class="mb-2">
+              <strong>Category:</strong>
+              <span class="ms-2">{{ product.category }}</span>
+            </div>
+          }
+          @if (product.farmerName) {
+            <div class="mb-2">
+              <strong>Farmer:</strong>
+              <span class="ms-2">{{ product.farmerName }}</span>
+            </div>
+          }
+          @if (product.organic !== undefined) {
+            <div class="mb-4">
+              <strong>Organic:</strong>
+              <span class="badge ms-2" [class.bg-success]="product.organic" [class.bg-secondary]="!product.organic">
+                {{ product.organic ? 'Yes' : 'No' }}
+              </span>
+            </div>
+          }
+
+          <!-- Quantity Input and Actions -->
+          <div class="mb-4 mt-4">
+            <label for="quantity" class="form-label">Order Quantity:</label>
+            <input
+              type="number"
+              class="form-control d-inline-block"
+              id="quantity"
+              value="1"
+              min="1"
+              [max]="product.quantity"
+              style="width: 100px"
+            />
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-lg">
+              <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
+            <button class="btn btn-outline-secondary btn-lg">
+              <i class="bi bi-heart"></i> Add to Wishlist
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
+} @else {
+  <div class="container my-4">
+    <div class="alert alert-info" role="alert">
+      <p>No product found.</p>
+    </div>
+  </div>
 }
-

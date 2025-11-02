@@ -1,0 +1,139 @@
+<div class="container my-4">
+  <button class="btn btn-outline-secondary mb-3" (click)="router.navigate(['/orders'])">
+    <i class="bi bi-arrow-left"></i> Back to Orders
+  </button>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Loading order details...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-danger" role="alert">
+      <i class="bi bi-exclamation-triangle"></i> {{ error }}
+      <div class="mt-2">
+        <button class="btn btn-outline-danger btn-sm" (click)="router.navigate(['/orders'])">
+          Go back to Orders
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (!loading && !error && order) {
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">
+          <i class="bi bi-receipt"></i> Order Details
+        </h4>
+      </div>
+      <div class="card-body">
+        <!-- Order Info -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <h5>Order Information</h5>
+            <p><strong>Order ID:</strong> {{ order._id }}</p>
+            <p><strong>Order Date:</strong> {{ formatDate(order.createdAt) }}</p>
+            <p><strong>Status:</strong> 
+              <span [ngClass]="getStatusBadgeClass(order.status)">
+                {{ order.status }}
+              </span>
+            </p>
+          </div>
+          <div class="col-md-6">
+            <h5>Payment Information</h5>
+            <p><strong>Payment Method:</strong> 
+              <span class="text-capitalize">{{ order.paymentMethod.replace('_', ' ') }}</span>
+            </p>
+            <p><strong>Payment Status:</strong> 
+              @if (order.paymentStatus === 'completed') {
+                <span class="badge bg-success">Completed</span>
+              } @else {
+                <span class="badge bg-warning">Pending</span>
+              }
+            </p>
+            <p class="h4 text-primary mt-2"><strong>Total: Rs {{ order.totalAmount.toFixed(2) }}</strong></p>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- Products -->
+        <h5 class="mb-3">Ordered Products</h5>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th class="text-end">Unit Price</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (product of orderProducts; track product.productId) {
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      @if (product.productImage) {
+                        <img 
+                          [src]="product.productImage" 
+                          alt="{{ product.productName }}"
+                          class="me-3"
+                          style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                      }
+                      <div>
+                        <strong>{{ product.productName || 'Product' }}</strong>
+                        <br>
+                        <small class="text-muted">ID: {{ product.productId.slice(-8) }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ product.quantity }}</td>
+                  <td class="text-end">Rs {{ product.price.toFixed(2) }}</td>
+                  <td class="text-end"><strong>Rs {{ (product.price * product.quantity).toFixed(2) }}</strong></td>
+                </tr>
+              }
+              @if (orderProducts.length === 0) {
+                <tr>
+                  <td colspan="4" class="text-center text-muted">
+                    Loading product details...
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="table-primary">
+                <th colspan="3" class="text-end">Grand Total:</th>
+                <th class="text-end">Rs {{ order.totalAmount.toFixed(2) }}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <hr>
+
+        <!-- Delivery Address -->
+        <div class="row">
+          <div class="col-md-12">
+            <h5 class="mb-3">Delivery Address</h5>
+            <div class="card bg-light">
+              <div class="card-body">
+                <p class="mb-1"><strong>{{ order.deliveryAddress.street }}</strong></p>
+                <p class="mb-1">{{ order.deliveryAddress.city }}, {{ order.deliveryAddress.province }}</p>
+                @if (order.deliveryAddress.phone) {
+                  <p class="mb-0">
+                    <i class="bi bi-telephone"></i> {{ order.deliveryAddress.phone }}
+                  </p>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

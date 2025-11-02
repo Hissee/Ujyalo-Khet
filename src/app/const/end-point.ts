@@ -16,6 +16,7 @@ export class Endpoint {
 
   // Orders
   public static readonly PLACE_ORDER = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders';
+  public static readonly GET_USER_ORDERS = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders/my';
   public static readonly VERIFY_KHALTI_PAYMENT = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders/verify-khalti';
 
   // Farmer

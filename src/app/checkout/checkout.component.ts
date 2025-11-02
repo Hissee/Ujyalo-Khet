@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { CartService } from '../cart/cart.service';
 import { OrderService, OrderRequest } from '../services/order.service';
 import { ICartItem } from '../cart/Icart-item';
+import { Endpoint } from '../const/end-point';
 
 declare var KhaltiCheckout: any;
 
@@ -18,6 +19,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   cartItems: ICartItem[] = [];
   totalPrice: number = 0;
   paymentMethod: 'cash_on_delivery' | 'khalti' = 'cash_on_delivery';
+  
+  provinces: string[] = [
+    'Gandaki', 'Bagmati', 'Madesh', 'Lumbini', 'Karnali', 'Koshi', 'Sudurpaschim'
+  ];
   
   // Delivery address form
   deliveryAddress = {
@@ -79,8 +84,41 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Format error message for display (replace newlines with HTML breaks)
+  getFormattedError(): string {
+    if (!this.error) return '';
+    return this.error.replace(/\n/g, '<br>');
+  }
+
+  canPlaceOrder(): boolean {
+    return !!(
+      this.deliveryAddress.province?.trim() &&
+      this.deliveryAddress.city?.trim() &&
+      this.deliveryAddress.street?.trim() &&
+      this.deliveryAddress.phone?.trim() &&
+      this.cartItems.length > 0 &&
+      !this.loading
+    );
+  }
+
   placeOrder(): void {
     if (!this.validateForm()) {
+      return;
+    }
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.error = 'Please login to place an order.';
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 2000);
+      return;
+    }
+
+    // Check if cart is empty
+    if (this.cartItems.length === 0) {
+      this.error = 'Your cart is empty. Please add products to cart.';
       return;
     }
 
@@ -95,77 +133,267 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   }
 
   private validateForm(): boolean {
-    if (!this.deliveryAddress.province.trim()) {
-      this.error = 'Please enter province';
+    if (!this.deliveryAddress.province?.trim()) {
+      this.error = 'Please select a province';
       return false;
     }
-    if (!this.deliveryAddress.city.trim()) {
+    if (!this.deliveryAddress.city?.trim()) {
       this.error = 'Please enter city';
       return false;
     }
-    if (!this.deliveryAddress.street.trim()) {
+    if (!this.deliveryAddress.street?.trim()) {
       this.error = 'Please enter street address';
       return false;
     }
-    if (!this.deliveryAddress.phone.trim()) {
+    if (!this.deliveryAddress.phone?.trim()) {
       this.error = 'Please enter phone number';
       return false;
     }
+    
+    // Validate phone number format (10 digits)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(this.deliveryAddress.phone.trim())) {
+      this.error = 'Phone number must be exactly 10 digits';
+      return false;
+    }
+    
     return true;
   }
 
-  private placeCashOnDeliveryOrder(): void {
-    const orderData: OrderRequest = {
-      products: this.cartItems.map(item => ({
-        productId: String(item.product.id),
-        quantity: item.quantity
-      })),
-      deliveryAddress: {
-        province: this.deliveryAddress.province,
-        city: this.deliveryAddress.city,
-        street: this.deliveryAddress.street,
-        phone: this.deliveryAddress.phone
-      },
-      paymentMethod: 'cash_on_delivery',
-      paymentStatus: 'pending'
-    };
+  // Validate MongoDB ObjectId format (24 hex characters)
+  private isValidObjectId(id: string | number | undefined | null): boolean {
+    if (!id) return false;
+    const idStr = String(id);
+    // MongoDB ObjectId is 24 hex characters
+    return /^[0-9a-fA-F]{24}$/.test(idStr);
+  }
 
-    this.orderService.placeOrder(orderData).subscribe({
-      next: (response) => {
-        // Save address for future use
-        localStorage.setItem('deliveryAddress', JSON.stringify(this.deliveryAddress));
-        
-        // Clear cart
-        this.cartService.clearCart();
-        
-        // Show success and redirect
-        alert('Order placed successfully! Order ID: ' + response.orderId);
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        console.error('Order error:', err);
-        this.error = err.error?.message || 'Failed to place order. Please try again.';
+  private placeCashOnDeliveryOrder(): void {
+    try {
+      // Validate product IDs before sending
+      const invalidProducts = this.cartItems.filter(item => {
+        const productId = item.product._id || item.product.id;
+        if (!productId || productId === 'undefined' || productId === 'null') {
+          return true;
+        }
+        // Check if it's a valid MongoDB ObjectId format
+        return !this.isValidObjectId(productId);
+      });
+
+      if (invalidProducts.length > 0) {
+        const productNames = invalidProducts.map(item => item.product.name).join(', ');
+        this.error = `Invalid product IDs in cart: ${productNames}. Please remove these items and try again.`;
         this.loading = false;
+        console.error('Invalid products:', invalidProducts);
+        return;
       }
-    });
+
+      // Validate cart is not empty
+      if (this.cartItems.length === 0) {
+        this.error = 'Your cart is empty. Please add products before placing an order.';
+        this.loading = false;
+        return;
+      }
+
+      // Use _id if available, otherwise use id - ensure it's a string
+      const orderData: OrderRequest = {
+        products: this.cartItems.map(item => {
+          const productId = item.product._id || String(item.product.id);
+          if (!this.isValidObjectId(productId)) {
+            throw new Error(`Invalid product ID format: ${productId} for product ${item.product.name}`);
+          }
+          return {
+            productId: String(productId), // Ensure it's a string
+            quantity: item.quantity
+          };
+        }),
+        deliveryAddress: {
+          province: this.deliveryAddress.province.trim(),
+          city: this.deliveryAddress.city.trim(),
+          street: this.deliveryAddress.street.trim(),
+          phone: this.deliveryAddress.phone.trim()
+        },
+        paymentMethod: 'cash_on_delivery',
+        paymentStatus: 'pending'
+      };
+
+      console.log('✅ Placing order with validated data:');
+      console.log('Order Data:', JSON.stringify(orderData, null, 2));
+      console.log('Cart Items:', this.cartItems);
+      console.log('User Token:', localStorage.getItem('token') ? 'Present' : 'Missing');
+
+      this.orderService.placeOrder(orderData).subscribe({
+        next: (response) => {
+          console.log('✅ Order placed successfully!', response);
+          this.loading = false;
+          this.error = null;
+          
+          // Save address for future use
+          localStorage.setItem('deliveryAddress', JSON.stringify(this.deliveryAddress));
+          
+          // Clear cart
+          this.cartService.clearCart();
+          
+          // Show success message
+          const orderId = response.orderId || 'N/A';
+          alert(`✅ Order placed successfully!\n\nOrder ID: ${orderId}\n\nYou will receive a confirmation shortly.`);
+          
+          // Redirect to home page
+          this.router.navigate(['/']);
+        },
+        error: (err) => {
+        console.error('Order error:', err);
+        console.error('Error details:', {
+          status: err.status,
+          statusText: err.statusText,
+          error: err.error,
+          message: err.message,
+          url: err.url,
+          headers: err.headers
+        });
+        
+        // Log the full error for debugging
+        if (err.error) {
+          console.error('Server error response:', JSON.stringify(err.error, null, 2));
+        }
+        
+        this.loading = false;
+        
+        // Better error handling with more detailed messages
+        if (err.status === 0) {
+          this.error = 'Unable to connect to server. Please check if the server is running.';
+        } else if (err.status === 401 || err.status === 403) {
+          this.error = 'Authentication failed. Please login again.';
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        } else if (err.status === 400) {
+          const serverMessage = err.error?.message || err.error?.error || 'Invalid order data';
+          this.error = `Validation error: ${serverMessage}. Please check your cart and delivery address.`;
+        } else if (err.status === 500) {
+          // Extract detailed error message - try multiple ways
+          let serverMessage = 'Internal server error occurred';
+          let errorDetails = '';
+          
+          if (err.error) {
+            if (typeof err.error === 'string') {
+              serverMessage = err.error;
+            } else if (err.error.error) {
+              // Backend returns { message: "Server error", error: "actual error message" }
+              serverMessage = err.error.error || err.error.message || 'Server error';
+              errorDetails = err.error.details || '';
+            } else if (err.error.message) {
+              serverMessage = err.error.message;
+            } else {
+              serverMessage = JSON.stringify(err.error);
+            }
+          }
+          
+          // Log full error for debugging
+          console.error('=== SERVER ERROR DETAILS (Cash on Delivery) ===');
+          console.error('HTTP Status:', err.status);
+          console.error('Status Text:', err.statusText);
+          console.error('Full error object:', err);
+          console.error('Error response body:', err.error);
+          console.error('Error response (JSON):', JSON.stringify(err.error, null, 2));
+          console.error('Request URL:', err.url || Endpoint.PLACE_ORDER);
+          console.error('Request method: POST');
+          console.error('');
+          console.error('--- ORDER DATA THAT WAS SENT ---');
+          console.error(JSON.stringify(orderData, null, 2));
+          console.error('');
+          console.error('--- CART ITEMS DETAILS ---');
+          this.cartItems.forEach((item, index) => {
+            console.error(`Item ${index + 1}:`, {
+              productId: item.product._id || item.product.id,
+              productIdValid: this.isValidObjectId(item.product._id || item.product.id),
+              productName: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price
+            });
+          });
+          console.error('');
+          console.error('--- USER AUTHENTICATION ---');
+          const userStr = localStorage.getItem('user');
+          const token = localStorage.getItem('token');
+          console.error('Token present:', !!token);
+          console.error('User data:', userStr ? JSON.parse(userStr) : 'Not found');
+          console.error('===============================================');
+          console.error('');
+          console.error('💡 TO FIX THIS ERROR:');
+          console.error('1. Open Network tab (F12 → Network)');
+          console.error('2. Find the POST request to /api/orders');
+          console.error('3. Click it → Go to "Response" tab');
+          console.error('4. Copy the error message shown there');
+          console.error('5. Check backend server console for detailed logs');
+          console.error('');
+          
+          // Show the actual error message if available
+          const displayMessage = errorDetails 
+            ? `${serverMessage}\n\nDetails: ${errorDetails}` 
+            : serverMessage;
+          
+          this.error = `Server Error: ${displayMessage}\n\nCheck Network tab Response for full error details.`;
+        } else {
+          const serverMessage = err.error?.message || err.error?.error || err.message || 'Unknown error';
+          this.error = `Error ${err.status}: ${serverMessage}`;
+        }
+        
+        // Show alert with error for visibility
+        console.error('Displaying error to user:', this.error);
+      }
+      });
+    } catch (error: any) {
+      console.error('Error preparing order:', error);
+      this.loading = false;
+      this.error = error.message || 'Failed to prepare order. Please check your cart and try again.';
+    }
   }
 
   private initiateKhaltiPayment(): void {
+    // Validate product IDs before sending
+    const invalidProducts = this.cartItems.filter(item => {
+      const productId = item.product._id || item.product.id;
+      if (!productId || productId === 'undefined' || productId === 'null') {
+        return true;
+      }
+      // Check if it's a valid MongoDB ObjectId format
+      return !this.isValidObjectId(productId);
+    });
+
+    if (invalidProducts.length > 0) {
+      const productNames = invalidProducts.map(item => item.product.name).join(', ');
+      this.error = `Invalid product IDs in cart: ${productNames}. Please remove these items and try again.`;
+      this.loading = false;
+      console.error('Invalid products:', invalidProducts);
+      return;
+    }
+
     // Prepare order first to get order ID
+    // Use _id if available, otherwise use id - ensure it's a string
     const orderData: OrderRequest = {
-      products: this.cartItems.map(item => ({
-        productId: String(item.product.id),
-        quantity: item.quantity
-      })),
+      products: this.cartItems.map(item => {
+        const productId = item.product._id || String(item.product.id);
+        if (!this.isValidObjectId(productId)) {
+          throw new Error(`Invalid product ID format: ${productId} for product ${item.product.name}`);
+        }
+        return {
+          productId: String(productId), // Ensure it's a string
+          quantity: item.quantity
+        };
+      }),
       deliveryAddress: {
-        province: this.deliveryAddress.province,
-        city: this.deliveryAddress.city,
-        street: this.deliveryAddress.street,
-        phone: this.deliveryAddress.phone
+        province: this.deliveryAddress.province.trim(),
+        city: this.deliveryAddress.city.trim(),
+        street: this.deliveryAddress.street.trim(),
+        phone: this.deliveryAddress.phone.trim()
       },
       paymentMethod: 'khalti',
       paymentStatus: 'pending'
     };
+
+    console.log('Placing Khalti order with data:', JSON.stringify(orderData, null, 2));
+    console.log('Cart items:', this.cartItems);
 
     // First, create the order
     this.orderService.placeOrder(orderData).subscribe({
@@ -182,8 +410,103 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Order creation error:', err);
-        this.error = err.error?.message || 'Failed to create order. Please try again.';
+        console.error('Error details:', {
+          status: err.status,
+          statusText: err.statusText,
+          error: err.error,
+          message: err.message,
+          url: err.url
+        });
+        
+        // Log the full error for debugging
+        if (err.error) {
+          console.error('Server error response:', JSON.stringify(err.error, null, 2));
+        }
+        
         this.loading = false;
+        
+        // Better error handling with more detailed messages
+        if (err.status === 0) {
+          this.error = 'Unable to connect to server. Please check if the server is running.';
+        } else if (err.status === 401 || err.status === 403) {
+          this.error = 'Authentication failed. Please login again.';
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        } else if (err.status === 400) {
+          const serverMessage = err.error?.message || err.error?.error || 'Invalid order data';
+          this.error = `Validation error: ${serverMessage}. Please check your cart and delivery address.`;
+        } else if (err.status === 500) {
+          // Extract detailed error message - try multiple ways
+          let serverMessage = 'Internal server error occurred';
+          let errorDetails = '';
+          
+          if (err.error) {
+            if (typeof err.error === 'string') {
+              serverMessage = err.error;
+            } else if (err.error.error) {
+              // Backend returns { message: "Server error", error: "actual error message" }
+              serverMessage = err.error.error || err.error.message || 'Server error';
+              errorDetails = err.error.details || '';
+            } else if (err.error.message) {
+              serverMessage = err.error.message;
+            } else {
+              serverMessage = JSON.stringify(err.error);
+            }
+          }
+          
+          // Log full error for debugging
+          console.error('=== SERVER ERROR DETAILS (Khalti) ===');
+          console.error('HTTP Status:', err.status);
+          console.error('Status Text:', err.statusText);
+          console.error('Full error object:', err);
+          console.error('Error response body:', err.error);
+          console.error('Error response (JSON):', JSON.stringify(err.error, null, 2));
+          console.error('Request URL:', err.url || Endpoint.PLACE_ORDER);
+          console.error('Request method: POST');
+          console.error('');
+          console.error('--- ORDER DATA THAT WAS SENT ---');
+          console.error(JSON.stringify(orderData, null, 2));
+          console.error('');
+          console.error('--- CART ITEMS DETAILS ---');
+          this.cartItems.forEach((item, index) => {
+            console.error(`Item ${index + 1}:`, {
+              productId: item.product._id || item.product.id,
+              productIdValid: this.isValidObjectId(item.product._id || item.product.id),
+              productName: item.product.name,
+              quantity: item.quantity,
+              price: item.product.price
+            });
+          });
+          console.error('');
+          console.error('--- USER AUTHENTICATION ---');
+          const userStr = localStorage.getItem('user');
+          const token = localStorage.getItem('token');
+          console.error('Token present:', !!token);
+          console.error('User data:', userStr ? JSON.parse(userStr) : 'Not found');
+          console.error('=====================================');
+          console.error('');
+          console.error('💡 TO FIX THIS ERROR:');
+          console.error('1. Open Network tab (F12 → Network)');
+          console.error('2. Find the POST request to /api/orders');
+          console.error('3. Click it → Go to "Response" tab');
+          console.error('4. Copy the error message shown there');
+          console.error('5. Check backend server console for detailed logs');
+          console.error('');
+          
+          // Show the actual error message if available
+          const displayMessage = errorDetails 
+            ? `${serverMessage}\n\nDetails: ${errorDetails}` 
+            : serverMessage;
+          
+          this.error = `Server Error: ${displayMessage}\n\nCheck Network tab Response for full error details.`;
+        } else {
+          const serverMessage = err.error?.message || err.error?.error || err.message || 'Unknown error';
+          this.error = `Error ${err.status}: ${serverMessage}`;
+        }
+        
+        // Show alert with error for visibility
+        console.error('Displaying error to user:', this.error);
       }
     });
   }

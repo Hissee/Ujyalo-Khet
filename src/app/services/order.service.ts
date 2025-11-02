@@ -24,6 +24,28 @@ export interface OrderResponse {
   orderId: string;
 }
 
+export interface Order {
+  _id: string;
+  customerId: string;
+  products: Array<{
+    productId: any;
+    quantity: number;
+    price: number;
+  }>;
+  totalAmount: number;
+  status: string;
+  deliveryAddress: {
+    province: string;
+    city: string;
+    street: string;
+    phone?: string;
+  };
+  paymentMethod: string;
+  paymentStatus: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -54,6 +76,19 @@ export class OrderService {
     return this.http.post(
       Endpoint.VERIFY_KHALTI_PAYMENT,
       paymentData,
+      { headers }
+    );
+  }
+
+  getUserOrders(): Observable<Order[]> {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    });
+
+    return this.http.get<Order[]>(
+      Endpoint.GET_USER_ORDERS,
       { headers }
     );
   }

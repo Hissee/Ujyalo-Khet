@@ -12,8 +12,25 @@
 
   @if (error) {
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      {{ error }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <h6><i class="bi bi-exclamation-triangle"></i> Order Failed</h6>
+      <p class="mb-2" [innerHTML]="getFormattedError()"></p>
+      <details class="mt-2">
+        <summary style="cursor: pointer; color: #fff; font-weight: bold;">📋 How to find the exact error:</summary>
+        <div class="mt-2 p-3 bg-dark text-white rounded" style="font-size: 0.9rem;">
+          <ol class="mb-0 ps-3">
+            <li class="mb-2">Press <strong>F12</strong> to open Developer Tools</li>
+            <li class="mb-2">Go to <strong>Network</strong> tab</li>
+            <li class="mb-2">Click <strong>"Place Order"</strong> button again</li>
+            <li class="mb-2">Find the <strong>POST</strong> request to <code>/api/orders</code></li>
+            <li class="mb-2">Click on it → Go to <strong>"Response"</strong> tab</li>
+            <li class="mb-2">Copy the error message shown there</li>
+            <li>Also check the <strong>Console</strong> tab for detailed logs</li>
+          </ol>
+          <hr class="my-2" style="border-color: #666;">
+          <p class="mb-0 small">💡 The actual error message will be in the Network → Response tab</p>
+        </div>
+      </details>
+      <button type="button" class="btn-close" (click)="error = null" aria-label="Close"></button>
     </div>
   }
 
@@ -28,15 +45,18 @@
           <form>
             <div class="mb-3">
               <label for="province" class="form-label">Province *</label>
-              <input
-                type="text"
-                class="form-control"
+              <select
+                class="form-select"
                 id="province"
                 [(ngModel)]="deliveryAddress.province"
                 name="province"
-                placeholder="Enter province"
                 required
-              />
+              >
+                <option value="">Select Province</option>
+                @for (province of provinces; track province) {
+                  <option [value]="province">{{ province }}</option>
+                }
+              </select>
             </div>
 
             <div class="mb-3">
@@ -155,12 +175,13 @@
           </div>
 
           <button
+            type="button"
             class="btn btn-primary btn-lg w-100"
             (click)="placeOrder()"
-            [disabled]="loading || cartItems.length === 0">
+            [disabled]="loading || cartItems.length === 0 || !canPlaceOrder()">
             @if (loading) {
               <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-              Processing...
+              Processing Order...
             } @else {
               <i class="bi bi-check-circle"></i> 
               @if (paymentMethod === 'cash_on_delivery') {
@@ -170,6 +191,12 @@
               }
             }
           </button>
+          
+          @if (!canPlaceOrder() && cartItems.length > 0) {
+            <small class="text-danger d-block mt-2 text-center">
+              <i class="bi bi-exclamation-triangle"></i> Please fill all required delivery address fields
+            </small>
+          }
 
           <p class="text-muted small text-center mt-3">
             By placing an order, you agree to our terms and conditions

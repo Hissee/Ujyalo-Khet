@@ -1,0 +1,200 @@
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0"><i class="bi bi-person-circle"></i> Edit Account</h3>
+            <button type="button" class="btn btn-light btn-sm" (click)="cancel()">
+              <i class="bi bi-x-lg"></i> Close
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          @if (loadingProfile) {
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2">Loading profile...</p>
+            </div>
+          } @else if (error && !user) {
+            <div class="alert alert-danger" role="alert">
+              <i class="bi bi-exclamation-triangle"></i> {{ error }}
+            </div>
+          } @else if (user) {
+            <!-- Success Message -->
+            @if (successMessage) {
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> {{ successMessage }}
+                <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+              </div>
+            }
+
+            <!-- Error Message -->
+            @if (error) {
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                <button type="button" class="btn-close" (click)="error = null"></button>
+              </div>
+            }
+
+            <!-- Current User Info -->
+            <div class="mb-4 p-3 bg-light rounded">
+              <h5 class="mb-2">Account Information</h5>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <strong>Name:</strong> {{ getFullName() }}
+                </div>
+                <div class="col-md-6 mb-2">
+                  <strong>Email:</strong> {{ user.email }}
+                  <small class="text-muted d-block">(Email cannot be changed)</small>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <strong>Role:</strong> 
+                  <span class="badge bg-primary">{{ user.role }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Form -->
+            <form (ngSubmit)="saveProfile()">
+              <h5 class="mb-3">Update Your Details</h5>
+
+              <!-- Name Fields -->
+              <div class="row mb-3">
+                <div class="col-md-4">
+                  <label for="firstName" class="form-label">
+                    First Name <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="firstName"
+                    [(ngModel)]="profileData.firstName"
+                    name="firstName"
+                    required
+                    [disabled]="loading">
+                </div>
+                <div class="col-md-4">
+                  <label for="middleName" class="form-label">Middle Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="middleName"
+                    [(ngModel)]="profileData.middleName"
+                    name="middleName"
+                    [disabled]="loading">
+                </div>
+                <div class="col-md-4">
+                  <label for="lastName" class="form-label">
+                    Last Name <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="lastName"
+                    [(ngModel)]="profileData.lastName"
+                    name="lastName"
+                    required
+                    [disabled]="loading">
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div class="mb-3">
+                <label for="phone" class="form-label">
+                  Phone Number <span class="text-danger">*</span>
+                </label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="phone"
+                  [(ngModel)]="profileData.phone"
+                  name="phone"
+                  placeholder="10-digit phone number"
+                  pattern="[0-9]{10}"
+                  maxlength="10"
+                  required
+                  [disabled]="loading">
+                <small class="text-muted">Enter 10-digit phone number</small>
+              </div>
+
+              <!-- Address Fields -->
+              <h6 class="mb-3 mt-4">Address Information</h6>
+
+              <div class="mb-3">
+                <label for="province" class="form-label">
+                  Province <span class="text-danger">*</span>
+                </label>
+                <select
+                  class="form-select"
+                  id="province"
+                  [(ngModel)]="profileData.province"
+                  name="province"
+                  required
+                  [disabled]="loading">
+                  <option value="">Select Province</option>
+                  @for (province of provinces; track province) {
+                    <option [value]="province">{{ province }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="city" class="form-label">
+                    City <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="city"
+                    [(ngModel)]="profileData.city"
+                    name="city"
+                    required
+                    [disabled]="loading">
+                </div>
+                <div class="col-md-6">
+                  <label for="street" class="form-label">
+                    Street Address <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="street"
+                    [(ngModel)]="profileData.street"
+                    name="street"
+                    required
+                    [disabled]="loading">
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex justify-content-between mt-4">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  (click)="cancel()"
+                  [disabled]="loading">
+                  <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  [disabled]="loading">
+                  @if (loading) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Saving...
+                  } @else {
+                    <i class="bi bi-check-circle"></i> Save Changes
+                  }
+                </button>
+              </div>
+            </form>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

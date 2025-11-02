@@ -13,4 +13,8 @@ export class Endpoint {
   public static readonly GET_ALL_PRODUCTS = Endpoint.API_BASE + Endpoint.API_VERSION + 'products';
   public static readonly GET_PRODUCT_BY_ID = (id: string) =>
     Endpoint.API_BASE + Endpoint.API_VERSION + `products/${id}`;
+
+  // Orders
+  public static readonly PLACE_ORDER = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders';
+  public static readonly VERIFY_KHALTI_PAYMENT = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders/verify-khalti';
 }

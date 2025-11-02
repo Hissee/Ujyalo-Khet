@@ -1,0 +1,154 @@
+<div class="container my-4">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">
+        <i class="bi bi-cart"></i> Shopping Cart
+        @if (totalItems > 0) {
+          <span class="badge bg-primary ms-2">{{ totalItems }} item(s)</span>
+        }
+      </h2>
+    </div>
+  </div>
+
+  @if (cartItems.length === 0) {
+    <div class="row">
+      <div class="col-12">
+        <div class="alert alert-info text-center" role="alert">
+          <h4 class="alert-heading">Your cart is empty!</h4>
+          <p>Start shopping to add items to your cart.</p>
+          <button class="btn btn-primary mt-3" (click)="continueShopping()">
+            <i class="bi bi-arrow-left"></i> Continue Shopping
+          </button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="row">
+      <!-- Cart Items -->
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Cart Items</h5>
+            <button 
+              class="btn btn-sm btn-outline-danger" 
+              (click)="clearCart()"
+              title="Clear cart">
+              <i class="bi bi-trash"></i> Clear Cart
+            </button>
+          </div>
+          <div class="card-body">
+            @for (item of cartItems; track item.product.id) {
+              <div class="cart-item mb-4 pb-4 border-bottom">
+                <div class="row">
+                  <!-- Product Image -->
+                  <div class="col-md-3">
+                    <img 
+                      [src]="item.product.image || 'https://via.placeholder.com/150'" 
+                      [alt]="item.product.name"
+                      class="img-fluid rounded"
+                      style="max-height: 150px; object-fit: cover;">
+                  </div>
+                  
+                  <!-- Product Details -->
+                  <div class="col-md-5">
+                    <h5 class="mb-2">{{ item.product.name }}</h5>
+                    <p class="text-muted mb-2">{{ item.product.description }}</p>
+                    <p class="mb-1">
+                      <strong>Category:</strong> {{ item.product.category }}
+                    </p>
+                    <p class="mb-1">
+                      <strong>Price:</strong> Rs {{ item.product.price }}
+                    </p>
+                    <p class="mb-0">
+                      <strong>Available:</strong> 
+                      <span class="badge bg-success">{{ item.product.quantity }}</span>
+                    </p>
+                  </div>
+                  
+                  <!-- Quantity Controls -->
+                  <div class="col-md-2">
+                    <label class="form-label">Quantity</label>
+                    <div class="input-group">
+                      <button 
+                        class="btn btn-outline-secondary" 
+                        type="button"
+                        (click)="decrementQuantity(item)"
+                        [disabled]="item.quantity <= 1">
+                        <i class="bi bi-dash"></i>
+                      </button>
+                      <input 
+                        type="number" 
+                        class="form-control text-center" 
+                        [value]="item.quantity"
+                        [min]="1"
+                        [max]="item.product.quantity"
+                        (change)="updateQuantity(item.product.id, $event)"
+                        style="width: 60px;">
+                      <button 
+                        class="btn btn-outline-secondary" 
+                        type="button"
+                        (click)="incrementQuantity(item)"
+                        [disabled]="item.quantity >= item.product.quantity">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Item Total and Remove -->
+                  <div class="col-md-2 text-end">
+                    <h5 class="text-primary mb-3">
+                      Rs {{ getItemTotal(item) }}
+                    </h5>
+                    <button 
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="removeItem(item.product.id)"
+                      title="Remove item">
+                      <i class="bi bi-trash"></i> Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="col-lg-4">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Order Summary</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between mb-3">
+              <span>Total Items:</span>
+              <strong>{{ totalItems }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <span>Subtotal:</span>
+              <strong>Rs {{ totalPrice.toFixed(2) }}</strong>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between mb-4">
+              <h5>Total:</h5>
+              <h5 class="text-primary">Rs {{ totalPrice.toFixed(2) }}</h5>
+            </div>
+            
+            <div class="d-grid gap-2">
+              <button 
+                class="btn btn-primary btn-lg"
+                (click)="checkout()">
+                <i class="bi bi-bag-check"></i> Proceed to Checkout
+              </button>
+              <button 
+                class="btn btn-outline-secondary"
+                (click)="continueShopping()">
+                <i class="bi bi-arrow-left"></i> Continue Shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

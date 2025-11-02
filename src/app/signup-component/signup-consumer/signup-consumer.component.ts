@@ -1,15 +1,16 @@
 import { User } from './../IUser';
 import { AuthService } from './../auth.service';
 import {Component, inject, OnDestroy, OnInit} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {FormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
-// import {AuthService} from '../auth.service';
-// import {User} from '../IUser';
 
 @Component({
   selector: 'app-signup-consumer',
   templateUrl: './signup-consumer.component.html',
   imports: [
+    CommonModule,
     FormsModule,
     ReactiveFormsModule
   ],
@@ -22,6 +23,8 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
     'Gandaki', 'Bagmati', 'Madesh', 'Lumbini', 'Karnali', 'Koshi', 'Sudurpaschim'
   ];
   service = inject(AuthService);
+  router = inject(Router);
+  loading = false;
 
 
 
@@ -83,17 +86,47 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
     
     console.log('Signup data:', user);
 
+    this.loading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
+
     this.service.signupCustomer(user)
       .subscribe({
         next: (res: any) => {
+          this.loading = false;
           this.successMessage = res.message || 'Signup successful!';
-          this.userForm.reset();
+          
+          // Store token if provided
+          if (res.token) {
+            localStorage.setItem('token', res.token);
+            localStorage.setItem('user', JSON.stringify(res.user));
+          }
+
+          // Redirect after a short delay
+          setTimeout(() => {
+            if (res.token) {
+              // If token is provided, redirect to home
+              this.router.navigate(['/']);
+            } else {
+              // Otherwise redirect to login page
+              this.router.navigate(['/login']);
+            }
+          }, 2000);
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Signup failed. Please try again.';
+          this.loading = false;
+          this.errorMessage = err.error?.message || err.error?.errors?.join(', ') || 'Signup failed. Please try again.';
           console.error('Signup error:', err);
         }
       });
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/']);
   }
 
 }

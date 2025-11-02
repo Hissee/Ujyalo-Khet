@@ -126,5 +126,11 @@ export class FarmerService {
       headers: this.getHeaders()
     });
   }
+
+  addProduct(productData: any): Observable<any> {
+    return this.http.post(Endpoint.ADD_PRODUCT, productData, {
+      headers: this.getHeaders()
+    });
+  }
 }
 

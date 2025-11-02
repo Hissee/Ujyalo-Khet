@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FarmerService, DashboardStats, FarmerOrder, FarmerProduct } from '../../services/farmer.service';
 
 @Component({
@@ -50,12 +50,23 @@ export class FarmerDashboardComponent implements OnInit {
 
   constructor(
     private farmerService: FarmerService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadDashboardData();
     this.loadProfile();
+    
+    // Check for query params to switch tabs
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        const tab = params['tab'];
+        if (['overview', 'orders', 'products', 'profile', 'revenue'].includes(tab)) {
+          this.switchTab(tab as 'overview' | 'orders' | 'products' | 'profile' | 'revenue');
+        }
+      }
+    });
   }
 
   loadDashboardData(): void {
@@ -148,7 +159,8 @@ export class FarmerDashboardComponent implements OnInit {
     
     if (tab === 'orders' && this.orders.length === 0) {
       this.loadOrders();
-    } else if (tab === 'products' && this.products.length === 0) {
+    } else if (tab === 'products') {
+      // Always reload products when switching to products tab to show latest data
       this.loadProducts();
     } else if (tab === 'revenue') {
       this.loadRevenue();

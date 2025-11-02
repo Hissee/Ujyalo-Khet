@@ -13,6 +13,7 @@ import {SignupConsumerComponent} from './signup-component/signup-consumer/signup
 import { CartComponent } from './cart/cart/cart.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { FarmerDashboardComponent } from './farmer/farmer-dashboard/farmer-dashboard.component';
+import { AddProductComponent } from './product/add-product/add-product.component';
 
 
 export const routes: Routes = [
@@ -68,6 +69,10 @@ export const routes: Routes = [
   {
     path: 'farmer-dashboard',
     component: FarmerDashboardComponent,
+  },
+  {
+    path: 'addproduct',
+    component: AddProductComponent,
   },
   {
     path: '**',

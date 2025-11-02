@@ -12,6 +12,7 @@ import { SignupComponent } from './signup-component/signup/signup.component';
 import {SignupConsumerComponent} from './signup-component/signup-consumer/signup-consumer.component';
 import { CartComponent } from './cart/cart/cart.component';
 import { CheckoutComponent } from './checkout/checkout.component';
+import { FarmerDashboardComponent } from './farmer/farmer-dashboard/farmer-dashboard.component';
 
 
 export const routes: Routes = [
@@ -63,6 +64,10 @@ export const routes: Routes = [
   {
     path: 'checkout',
     component: CheckoutComponent,
+  },
+  {
+    path: 'farmer-dashboard',
+    component: FarmerDashboardComponent,
   },
   {
     path: '**',

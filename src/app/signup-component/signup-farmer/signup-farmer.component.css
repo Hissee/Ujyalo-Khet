@@ -1,20 +1,123 @@
-.container{
-    margin: 5vh;
+.container {
+  margin: 5vh auto;
+  max-width: 900px;
+  padding: 20px;
 }
+
 .card {
   border-radius: 15px;
   max-width: 700px;
   margin: auto;
-  color: var(--primary-color);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
 }
 
-.btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+.card h2 {
+  color: #04bc64;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
-.btn-primary:hover {
-  background-color: #146c43;
-  border-color: #146c43;
+.form-label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 5px;
 }
 
+.form-control,
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding: 10px 15px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #04bc64;
+  box-shadow: 0 0 0 0.2rem rgba(4, 188, 100, 0.25);
+  outline: none;
+}
+
+.form-control.ng-invalid.ng-touched,
+.form-select.ng-invalid.ng-touched {
+  border-color: #dc3545;
+}
+
+.text-danger {
+  font-size: 0.875rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.btn-success {
+  background-color: #04bc64;
+  border-color: #04bc64;
+  border-radius: 8px;
+  padding: 10px 30px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover:not(:disabled) {
+  background-color: #038d4f;
+  border-color: #038d4f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(4, 188, 100, 0.3);
+}
+
+.btn-success:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-outline-primary {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+}
+
+.alert-success {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 2vh auto;
+    padding: 10px;
+  }
+
+  .card {
+    margin: 0;
+    border-radius: 10px;
+  }
+
+  .row.g-2 {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .col-md-4 {
+    margin-bottom: 10px;
+  }
+}

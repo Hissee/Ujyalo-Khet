@@ -1,6 +1,12 @@
 <div class="container mt-5">
   <div class="card shadow p-4">
-    <h2 class="text-center mb-4">Sign-Up As Farmer</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Sign-Up As Farmer</h2>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="goToHome()">
+        <i class="bi bi-house"></i> Home
+      </button>
+    </div>
+    <p class="text-muted text-center mb-4">Create your farmer account to start selling your products</p>
     <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
 
       <!-- Name Fields -->
@@ -91,18 +97,34 @@
 
       @if (successMessage) {
         <div class="alert alert-success mb-3" role="alert">
-          {{ successMessage }}
+          <i class="bi bi-check-circle"></i> {{ successMessage }}
+          <br>
+          <small>Redirecting you to your dashboard...</small>
         </div>
       }
 
       @if (errorMessage) {
         <div class="alert alert-danger mb-3" role="alert">
-          {{ errorMessage }}
+          <i class="bi bi-exclamation-triangle"></i> {{ errorMessage }}
         </div>
       }
 
+      <div class="text-center mb-3">
+        <button type="submit" class="btn btn-success px-5" [disabled]="signupForm.invalid || loading">
+          @if (loading) {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+            Signing Up...
+          } @else {
+            <i class="bi bi-person-plus"></i> Sign Up
+          }
+        </button>
+      </div>
+
       <div class="text-center">
-        <button type="submit" class="btn btn-success px-4" [disabled]="signupForm.invalid">Submit</button>
+        <p class="text-muted mb-2">Already have an account?</p>
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="goToLogin()">
+          <i class="bi bi-box-arrow-in-right"></i> Login
+        </button>
       </div>
     </form>
   </div>

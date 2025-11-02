@@ -17,4 +17,14 @@ export class Endpoint {
   // Orders
   public static readonly PLACE_ORDER = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders';
   public static readonly VERIFY_KHALTI_PAYMENT = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders/verify-khalti';
+
+  // Farmer
+  public static readonly FARMER_PRODUCTS = Endpoint.API_BASE + Endpoint.API_VERSION + 'farmer/products';
+  public static readonly FARMER_ORDERS = Endpoint.API_BASE + Endpoint.API_VERSION + 'farmer/orders';
+  public static readonly FARMER_DASHBOARD_STATS = Endpoint.API_BASE + Endpoint.API_VERSION + 'farmer/dashboard/stats';
+  public static readonly FARMER_REVENUE = Endpoint.API_BASE + Endpoint.API_VERSION + 'farmer/revenue';
+  public static readonly FARMER_UPDATE_ORDER_STATUS = (orderId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `farmer/orders/${orderId}/status`;
+  public static readonly GET_CURRENT_USER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/me';
+  public static readonly UPDATE_PROFILE = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/profile';
 }

@@ -1,18 +1,22 @@
 import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-signup-farmer',
-  imports: [ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './signup-farmer.component.html',
   styleUrl: './signup-farmer.component.css'
 })
 export class SignupFarmerComponent {
   signupForm: FormGroup;
   authService = inject(AuthService);
+  router = inject(Router);
   successMessage = '';
   errorMessage = '';
+  loading = false;
 
   provinces: string[] = [
     'Gandaki', 'Bagmati', 'Madesh', 'Lumbini', 'Karnali', 'Koshi', 'Sudurpaschim'
@@ -65,18 +69,48 @@ export class SignupFarmerComponent {
       password: this.signupForm.get('password')?.value,
     };
 
+    this.loading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
+
     console.log('Farmer signup data:', farmerData);
 
     this.authService.signupFarmer(farmerData)
       .subscribe({
         next: (res: any) => {
+          this.loading = false;
           this.successMessage = res.message || 'Signup successful!';
-          this.signupForm.reset();
+          
+          // Store token if provided
+          if (res.token) {
+            localStorage.setItem('token', res.token);
+            localStorage.setItem('user', JSON.stringify(res.user));
+          }
+
+          // Redirect after a short delay
+          setTimeout(() => {
+            if (res.token) {
+              // If token is provided, redirect to dashboard
+              this.router.navigate(['/farmer-dashboard']);
+            } else {
+              // Otherwise redirect to login page
+              this.router.navigate(['/login-farmer']);
+            }
+          }, 2000);
         },
         error: (err) => {
-          this.errorMessage = err.error?.message || 'Signup failed. Please try again.';
+          this.loading = false;
+          this.errorMessage = err.error?.message || err.error?.errors?.join(', ') || 'Signup failed. Please try again.';
           console.error('Farmer signup error:', err);
         }
       });
+  }
+
+  goToLogin(): void {
+    this.router.navigate(['/login-farmer']);
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/']);
   }
 }

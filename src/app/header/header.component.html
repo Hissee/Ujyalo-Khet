@@ -1,24 +1,91 @@
 <header class="main-header">
   <div class="logo">
     <div class="image"></div>
-    <span>UjyaloKhet
-
-    </span>
-  </div>
-  <nav class="nav-links">
-    <a routerLink="./">Home</a>
-    <a routerLink="./product-list">Products</a>
-    <a routerLink="./login">Login</a>
-    <a routerLink="./contact">Contact</a>
-    <a routerLink="./about">About</a>
-    <a routerLink="./addproduct">Add product</a>
-    <a routerLink="./updateproduct">Update product</a>
-    <a routerLink="./deleteproduct">Delete product</a>
-    <a routerLink="./cart" class="cart-link">
-      <i class="bi bi-cart"></i> Cart
-      @if (cartItemCount > 0) {
-        <span class="cart-badge">{{ cartItemCount }}</span>
-      }
+    <a routerLink="./" class="logo-link">
+      <span>UjyaloKhet</span>
     </a>
+  </div>
+  
+  <nav class="nav-links">
+    <!-- Home - Always visible -->
+    <a routerLink="./" class="nav-link-item">
+      <i class="bi bi-house"></i> Home
+    </a>
+
+    <!-- Products - Always visible -->
+    <a routerLink="./product-list" class="nav-link-item">
+      <i class="bi bi-box-seam"></i> Products
+    </a>
+
+    <!-- Not logged in: Show Signup and Login -->
+    @if (!isLoggedIn) {
+      <a routerLink="./signup" class="nav-link-item">
+        <i class="bi bi-person-plus"></i> Sign Up
+      </a>
+      <a routerLink="./login" class="nav-link-item">
+        <i class="bi bi-box-arrow-in-right"></i> Login
+      </a>
+    }
+
+    <!-- Logged in: Show Cart, Notifications, and User Account -->
+    @if (isLoggedIn) {
+      <!-- Cart - Only for consumers -->
+      @if (user?.role === 'consumer' || user?.role === 'customer') {
+        <a routerLink="./cart" class="nav-link-item cart-link">
+          <i class="bi bi-cart"></i> Cart
+          @if (cartItemCount > 0) {
+            <span class="cart-badge">{{ cartItemCount }}</span>
+          }
+        </a>
+      }
+
+      <!-- Notifications -->
+      <button class="nav-link-item notification-btn" type="button" (click)="toggleUserMenu()">
+        <i class="bi bi-bell"></i> Notifications
+        @if (notificationCount > 0) {
+          <span class="notification-badge">{{ notificationCount }}</span>
+        }
+      </button>
+
+      <!-- User Account Menu -->
+      <div class="user-menu-container" (click)="$event.stopPropagation()">
+        <button 
+          class="nav-link-item menu-btn" 
+          type="button" 
+          (click)="toggleUserMenu()"
+          [class.active]="showUserMenu">
+          <i class="bi bi-list"></i> Menu
+        </button>
+
+        <!-- User Dropdown Menu -->
+        @if (showUserMenu) {
+          <div class="user-dropdown">
+            <div class="dropdown-menu-items">
+              @if (user?.role === 'farmer') {
+                <a routerLink="./farmer-dashboard" (click)="closeUserMenu()" class="dropdown-item">
+                  <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a routerLink="./addproduct" (click)="closeUserMenu()" class="dropdown-item">
+                  <i class="bi bi-plus-circle"></i> Add Product
+                </a>
+              }
+              <a (click)="navigateToEditAccount(); closeUserMenu()" class="dropdown-item">
+                <i class="bi bi-pencil-square"></i> Edit Account
+              </a>
+              <a routerLink="./contact" (click)="closeUserMenu()" class="dropdown-item">
+                <i class="bi bi-envelope"></i> Contact
+              </a>
+              <a routerLink="./about" (click)="closeUserMenu()" class="dropdown-item">
+                <i class="bi bi-info-circle"></i> About
+              </a>
+              <hr>
+              <a (click)="confirmAndLogout(); closeUserMenu()" class="dropdown-item logout-item">
+                <i class="bi bi-box-arrow-right"></i> Logout
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    }
   </nav>
 </header>

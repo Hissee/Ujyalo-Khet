@@ -7,13 +7,18 @@
   </div>
   <nav class="nav-links">
     <a routerLink="./">Home</a>
+    <a routerLink="./product-list">Products</a>
     <a routerLink="./login">Login</a>
     <a routerLink="./contact">Contact</a>
     <a routerLink="./about">About</a>
     <a routerLink="./addproduct">Add product</a>
     <a routerLink="./updateproduct">Update product</a>
     <a routerLink="./deleteproduct">Delete product</a>
-
-
+    <a routerLink="./cart" class="cart-link">
+      <i class="bi bi-cart"></i> Cart
+      @if (cartItemCount > 0) {
+        <span class="cart-badge">{{ cartItemCount }}</span>
+      }
+    </a>
   </nav>
 </header>

@@ -10,6 +10,8 @@ import { SignupFarmerComponent } from './signup-component/signup-farmer/signup-f
 import { LoginFarmerComponent } from './login-farmer/login-farmer.component';
 import { SignupComponent } from './signup-component/signup/signup.component';
 import {SignupConsumerComponent} from './signup-component/signup-consumer/signup-consumer.component';
+import { CartComponent } from './cart/cart/cart.component';
+import { CheckoutComponent } from './checkout/checkout.component';
 
 
 export const routes: Routes = [
@@ -53,6 +55,14 @@ export const routes: Routes = [
   {
     path: 'login-farmer',
     component: LoginFarmerComponent,
+  },
+  {
+    path: 'cart',
+    component: CartComponent,
+  },
+  {
+    path: 'checkout',
+    component: CheckoutComponent,
   },
   {
     path: '**',

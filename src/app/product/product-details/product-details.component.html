@@ -38,7 +38,7 @@
           <!-- Quantity Available -->
           <div class="mb-3">
             <strong>Quantity Available:</strong>
-            <span class="badge bg-success ms-2 fs-6">{{ product.quantity }}</span>
+            <span class="badge bg-success ms-2 fs-6">{{ product.quantity }} kg</span>
           </div>
 
           <!-- Description -->
@@ -93,7 +93,7 @@
           <!-- Quantity Input and Actions -->
           <div class="mb-4 mt-4">
             <label for="quantity" class="form-label">
-              <strong>Order Quantity:</strong>
+              <strong>Order Quantity (kg):</strong>
             </label>
             <div class="input-group" style="max-width: 200px;">
               <button 
@@ -123,48 +123,55 @@
             </div>
             <small class="text-muted">
               @if (product.quantity > 0) {
-                Maximum {{ product.quantity }} available
+                Maximum {{ product.quantity }} kg available
               } @else {
                 <span class="text-danger">Out of Stock</span>
               }
             </small>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="d-flex flex-column flex-md-row gap-2 mb-3">
-            <button 
-              class="btn btn-primary btn-lg flex-fill"
-              (click)="addToCart()"
-              [disabled]="addingToCart || product.quantity === 0 || orderQuantity <= 0">
-              @if (addingToCart) {
-                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                Adding...
-              } @else {
-                <i class="bi bi-cart-plus"></i> Add to Cart
-              }
-            </button>
-            
-            <button 
-              class="btn btn-success btn-lg flex-fill"
-              (click)="placeOrder()"
-              [disabled]="placingOrder || product.quantity === 0 || orderQuantity <= 0">
-              @if (placingOrder) {
-                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                Processing...
-              } @else {
-                <i class="bi bi-bag-check"></i> Place Order
-              }
-            </button>
-          </div>
+          <!-- Action Buttons - Only show for consumers, not farmers -->
+          @if (!isFarmer) {
+            <div class="d-flex flex-column flex-md-row gap-2 mb-3">
+              <button 
+                class="btn btn-primary btn-lg flex-fill"
+                (click)="addToCart()"
+                [disabled]="addingToCart || product.quantity === 0 || orderQuantity <= 0">
+                @if (addingToCart) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Adding...
+                } @else {
+                  <i class="bi bi-cart-plus"></i> Add to Cart
+                }
+              </button>
+              
+              <button 
+                class="btn btn-success btn-lg flex-fill"
+                (click)="placeOrder()"
+                [disabled]="placingOrder || product.quantity === 0 || orderQuantity <= 0">
+                @if (placingOrder) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  Processing...
+                } @else {
+                  <i class="bi bi-bag-check"></i> Place Order
+                }
+              </button>
+            </div>
 
-          <!-- Quick Actions -->
-          <div class="d-flex gap-2">
-            <button 
-              class="btn btn-outline-primary"
-              (click)="viewCart()">
-              <i class="bi bi-cart"></i> View Cart
-            </button>
-          </div>
+            <!-- Quick Actions -->
+            <div class="d-flex gap-2">
+              <button 
+                class="btn btn-outline-primary"
+                (click)="viewCart()">
+                <i class="bi bi-cart"></i> View Cart
+              </button>
+            </div>
+          } @else {
+            <!-- Farmer View - Show info message instead -->
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i> You are viewing this product as a seller. To purchase products, please login as a consumer.
+            </div>
+          }
         </div>
       </div>
     </div>

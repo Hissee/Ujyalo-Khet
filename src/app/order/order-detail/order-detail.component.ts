@@ -64,6 +64,12 @@ export class OrderDetailComponent implements OnInit {
     });
   }
 
+  refreshOrder(): void {
+    if (this.order) {
+      this.loadOrderDetail(this.order._id);
+    }
+  }
+
   loadProductDetails(products: Order['products']): void {
     this.orderProducts = [];
     let loadedCount = 0;
@@ -115,18 +121,64 @@ export class OrderDetailComponent implements OnInit {
   getStatusBadgeClass(status: string): string {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'badge bg-warning';
+        return 'bg-warning text-dark';
       case 'confirmed':
+        return 'bg-info';
       case 'processing':
-        return 'badge bg-info';
+        return 'bg-info';
       case 'shipped':
-        return 'badge bg-primary';
+        return 'bg-primary';
       case 'delivered':
-        return 'badge bg-success';
+        return 'bg-success';
       case 'cancelled':
-        return 'badge bg-danger';
+        return 'bg-danger';
       default:
-        return 'badge bg-secondary';
+        return 'bg-secondary';
+    }
+  }
+
+  getStatusIcon(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'bi-hourglass-split';
+      case 'confirmed':
+        return 'bi-check-circle';
+      case 'processing':
+        return 'bi-gear';
+      case 'shipped':
+        return 'bi-truck';
+      case 'delivered':
+        return 'bi-check-circle-fill';
+      case 'cancelled':
+        return 'bi-x-circle';
+      default:
+        return 'bi-question-circle';
+    }
+  }
+
+  getPaymentStatusBadgeClass(paymentStatus: string): string {
+    switch (paymentStatus?.toLowerCase()) {
+      case 'completed':
+        return 'bg-success';
+      case 'pending':
+        return 'bg-warning text-dark';
+      case 'failed':
+        return 'bg-danger';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
+  getPaymentStatusIcon(paymentStatus: string): string {
+    switch (paymentStatus?.toLowerCase()) {
+      case 'completed':
+        return 'bi-check-circle-fill';
+      case 'pending':
+        return 'bi-clock';
+      case 'failed':
+        return 'bi-x-circle-fill';
+      default:
+        return 'bi-question-circle';
     }
   }
 

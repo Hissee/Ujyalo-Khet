@@ -126,5 +126,23 @@ export class FarmerService {
       headers: this.getHeaders()
     });
   }
+
+  addProduct(productData: any): Observable<any> {
+    return this.http.post(Endpoint.ADD_PRODUCT, productData, {
+      headers: this.getHeaders()
+    });
+  }
+
+  updateProduct(productId: string, productData: any): Observable<any> {
+    return this.http.put(Endpoint.UPDATE_PRODUCT(productId), productData, {
+      headers: this.getHeaders()
+    });
+  }
+
+  deleteProduct(productId: string): Observable<any> {
+    return this.http.delete(Endpoint.DELETE_PRODUCT(productId), {
+      headers: this.getHeaders()
+    });
+  }
 }
 

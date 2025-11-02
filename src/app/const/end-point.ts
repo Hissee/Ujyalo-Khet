@@ -13,6 +13,10 @@ export class Endpoint {
   public static readonly GET_ALL_PRODUCTS = Endpoint.API_BASE + Endpoint.API_VERSION + 'products';
   public static readonly GET_PRODUCT_BY_ID = (id: string) =>
     Endpoint.API_BASE + Endpoint.API_VERSION + `products/${id}`;
+  public static readonly UPDATE_PRODUCT = (id: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `products/${id}`;
+  public static readonly DELETE_PRODUCT = (id: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `products/${id}`;
 
   // Orders
   public static readonly PLACE_ORDER = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders';

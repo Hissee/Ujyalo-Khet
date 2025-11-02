@@ -153,7 +153,12 @@ export class EditAccountComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/']);
+    // Route to dashboard if farmer, otherwise home
+    if (this.user?.role === 'farmer') {
+      this.router.navigate(['/farmer-dashboard']);
+    } else {
+      this.router.navigate(['/']);
+    }
   }
 
   getFullName(): string {
@@ -164,3 +169,4 @@ export class EditAccountComponent implements OnInit {
     return parts.join(' ');
   }
 }
+

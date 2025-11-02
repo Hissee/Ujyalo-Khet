@@ -16,6 +16,8 @@ import { FarmerDashboardComponent } from './farmer/farmer-dashboard/farmer-dashb
 import { EditAccountComponent } from './edit-account/edit-account.component';
 import { OrderListComponent } from './order/order-list/order-list.component';
 import { OrderDetailComponent } from './order/order-detail/order-detail.component';
+import { UpdateProductComponent } from './product/update-product/update-product.component';
+import { AddProductComponent } from './product/add-product/add-product.component';
 
 
 export const routes: Routes = [
@@ -71,6 +73,14 @@ export const routes: Routes = [
   {
     path: 'farmer-dashboard',
     component: FarmerDashboardComponent,
+  },
+  {
+    path: 'addproduct',
+    component: AddProductComponent,
+  },
+  {
+    path: 'updateproduct',
+    component: UpdateProductComponent,
   },
   {
     path: 'edit-account',

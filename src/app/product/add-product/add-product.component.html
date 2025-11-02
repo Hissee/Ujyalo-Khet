@@ -1,1 +1,211 @@
-<p>add-product works!</p>
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card shadow">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">
+            <i class="bi bi-plus-circle"></i> Add New Product
+          </h4>
+        </div>
+        <div class="card-body">
+          @if (error) {
+            <div class="alert alert-danger" role="alert">
+              <i class="bi bi-exclamation-triangle"></i> {{ error }}
+            </div>
+          }
+
+          @if (successMessage) {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <i class="bi bi-check-circle"></i> {{ successMessage }}
+              <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+            </div>
+          }
+
+          <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+            <!-- Product Name -->
+            <div class="mb-3">
+              <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                formControlName="name"
+                [class.is-invalid]="isFieldInvalid('name')"
+                placeholder="Enter product name">
+              @if (isFieldInvalid('name')) {
+                <div class="invalid-feedback">{{ getFieldError('name') }}</div>
+              }
+            </div>
+
+            <!-- Description -->
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea
+                class="form-control"
+                id="description"
+                formControlName="description"
+                rows="4"
+                placeholder="Enter product description"></textarea>
+            </div>
+
+            <!-- Category -->
+            <div class="mb-3">
+              <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+              <select
+                class="form-select"
+                id="category"
+                formControlName="category"
+                [class.is-invalid]="isFieldInvalid('category')">
+                <option value="">Select a category</option>
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ cat.charAt(0).toUpperCase() + cat.slice(1) }}</option>
+                }
+              </select>
+              @if (isFieldInvalid('category')) {
+                <div class="invalid-feedback">{{ getFieldError('category') }}</div>
+              }
+            </div>
+
+            <!-- Price and Quantity -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="price" class="form-label">Price (Rs) <span class="text-danger">*</span></label>
+                <input
+                  type="number"
+                  step="0.01"
+                  class="form-control"
+                  id="price"
+                  formControlName="price"
+                  [class.is-invalid]="isFieldInvalid('price')"
+                  placeholder="0.00"
+                  min="0.01">
+                @if (isFieldInvalid('price')) {
+                  <div class="invalid-feedback">{{ getFieldError('price') }}</div>
+                }
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="quantity" class="form-label">Quantity (kg) <span class="text-danger">*</span></label>
+                <input
+                  type="number"
+                  step="0.01"
+                  class="form-control"
+                  id="quantity"
+                  formControlName="quantity"
+                  [class.is-invalid]="isFieldInvalid('quantity')"
+                  placeholder="0.00"
+                  min="0.01">
+                @if (isFieldInvalid('quantity')) {
+                  <div class="invalid-feedback">{{ getFieldError('quantity') }}</div>
+                }
+              </div>
+            </div>
+
+            <!-- Harvest Date and Organic -->
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="harvestDate" class="form-label">Harvest Date</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="harvestDate"
+                  formControlName="harvestDate">
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check mt-4">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="organic"
+                    formControlName="organic">
+                  <label class="form-check-label" for="organic">
+                    Organic Product
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Images -->
+            <div class="mb-3">
+              <label class="form-label">Product Images</label>
+              
+              <!-- File Upload -->
+              <div class="mb-2">
+                <input
+                  type="file"
+                  class="form-control"
+                  accept="image/*"
+                  multiple
+                  (change)="onFileSelected($event)"
+                  [disabled]="uploadingImages">
+                @if (uploadingImages) {
+                  <small class="text-muted">Uploading images...</small>
+                }
+              </div>
+
+              <!-- URL Input -->
+              <div class="input-group mb-2">
+                <input
+                  type="url"
+                  class="form-control"
+                  placeholder="Or enter image URL"
+                  [(ngModel)]="newImageUrl"
+                  [ngModelOptions]="{standalone: true}">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="addImageUrl()">
+                  Add URL
+                </button>
+              </div>
+
+              <!-- Image Previews -->
+              @if (imageUrls.length > 0) {
+                <div class="row g-2">
+                  @for (imageUrl of imageUrls; track $index) {
+                    <div class="col-md-3 col-sm-4 col-6">
+                      <div class="position-relative">
+                        <img
+                          [src]="imageUrl"
+                          alt="Product image"
+                          class="img-thumbnail"
+                          style="width: 100%; height: 150px; object-fit: cover;">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                          (click)="removeImageUrl($index)">
+                          <i class="bi bi-x"></i>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="d-flex gap-2">
+              <button
+                type="submit"
+                class="btn btn-success"
+                [disabled]="submitting || productForm.invalid">
+                @if (submitting) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                  Adding...
+                } @else {
+                  <i class="bi bi-plus-circle"></i> Add Product
+                }
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="cancel()"
+                [disabled]="submitting">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

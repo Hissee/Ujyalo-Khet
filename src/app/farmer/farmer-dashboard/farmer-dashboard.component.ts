@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FarmerService, DashboardStats, FarmerOrder, FarmerProduct } from '../../services/farmer.service';
 
 @Component({
@@ -50,10 +50,25 @@ export class FarmerDashboardComponent implements OnInit {
 
   constructor(
     private farmerService: FarmerService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    // Check for query params to determine which tab to show
+    this.route.queryParams.subscribe(params => {
+      if (params['tab']) {
+        this.switchTab(params['tab'] as 'overview' | 'orders' | 'products' | 'profile' | 'revenue');
+      }
+    });
+    
+    // Check for fragment (for backward compatibility)
+    this.route.fragment.subscribe(fragment => {
+      if (fragment === 'profile') {
+        this.switchTab('profile');
+      }
+    });
+    
     this.loadDashboardData();
     this.loadProfile();
   }
@@ -226,6 +241,24 @@ export class FarmerDashboardComponent implements OnInit {
 
   navigateToUpdateProduct(productId: string): void {
     this.router.navigate(['/updateproduct'], { queryParams: { id: productId } });
+  }
+
+  deleteProduct(productId: string, productName: string): void {
+    if (!confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    this.farmerService.deleteProduct(productId).subscribe({
+      next: (response) => {
+        alert('Product deleted successfully!');
+        this.loadProducts(); // Refresh the product list
+        this.loadDashboardData(); // Refresh stats
+      },
+      error: (err) => {
+        console.error('Error deleting product:', err);
+        alert(err.error?.message || 'Failed to delete product. Make sure there are no active orders for this product.');
+      }
+    });
   }
 
   getRevenueDates(): string[] {

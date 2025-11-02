@@ -1,9 +1,26 @@
 <div class="container my-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-bag-check"></i> My Orders</h2>
-    <button class="btn btn-outline-secondary" (click)="router.navigate(['/'])">
-      <i class="bi bi-arrow-left"></i> Back to Home
-    </button>
+    <div>
+      <h2 class="mb-0"><i class="bi bi-bag-check"></i> My Orders</h2>
+      <small class="text-muted">Orders auto-refresh every 30 seconds</small>
+    </div>
+    <div class="d-flex gap-2">
+      <button 
+        class="btn btn-outline-primary" 
+        (click)="refreshOrders(true)"
+        [disabled]="refreshing || loading"
+        title="Refresh orders">
+        @if (refreshing) {
+          <span class="spinner-border spinner-border-sm me-1"></span>
+          Refreshing...
+        } @else {
+          <i class="bi bi-arrow-clockwise"></i> Refresh
+        }
+      </button>
+      <button class="btn btn-outline-secondary" (click)="router.navigate(['/'])">
+        <i class="bi bi-arrow-left"></i> Back to Home
+      </button>
+    </div>
   </div>
 
   @if (loading) {
@@ -40,26 +57,31 @@
             <div class="card-body">
               <div class="row align-items-center">
                 <div class="col-md-8">
-                  <div class="d-flex align-items-center mb-2">
-                    <h5 class="mb-0 me-3">Order #{{ order._id.slice(-8) }}</h5>
-                    <span [ngClass]="getStatusBadgeClass(order.status)">
-                      {{ order.status }}
+                  <div class="d-flex align-items-center mb-2 flex-wrap gap-2">
+                    <h5 class="mb-0 me-2">Order #{{ order._id.slice(-8) }}</h5>
+                    <span [ngClass]="getStatusBadgeClass(order.status)" class="badge">
+                      <i class="bi" [ngClass]="getStatusIcon(order.status)"></i>
+                      {{ order.status | titlecase }}
+                    </span>
+                    <span [ngClass]="getPaymentStatusBadgeClass(order.paymentStatus)" class="badge">
+                      <i class="bi" [ngClass]="getPaymentStatusIcon(order.paymentStatus)"></i>
+                      Payment: {{ order.paymentStatus | titlecase }}
                     </span>
                   </div>
                   <p class="text-muted mb-2">
-                    <i class="bi bi-calendar"></i> {{ formatDate(order.createdAt) }}
+                    <i class="bi bi-calendar"></i> Placed: {{ formatDate(order.createdAt) }}
+                    @if (order.updatedAt && order.updatedAt !== order.createdAt) {
+                      <span class="ms-3">
+                        <i class="bi bi-clock-history"></i> Updated: {{ formatDate(order.updatedAt) }}
+                      </span>
+                    }
                   </p>
                   <p class="mb-1">
                     <strong>Items:</strong> {{ order.products.length }} product(s)
                   </p>
                   <p class="mb-0">
-                    <strong>Payment:</strong> 
-                    <span class="text-capitalize">{{ order.paymentMethod.replace('_', ' ') }}</span>
-                    @if (order.paymentStatus === 'completed') {
-                      <i class="bi bi-check-circle text-success ms-1"></i>
-                    } @else {
-                      <i class="bi bi-clock text-warning ms-1"></i>
-                    }
+                    <strong>Payment Method:</strong> 
+                    <span class="text-capitalize badge bg-info">{{ order.paymentMethod.replace('_', ' ') }}</span>
                   </p>
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">

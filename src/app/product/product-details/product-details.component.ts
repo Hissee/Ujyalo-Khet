@@ -23,6 +23,10 @@ export class ProductDetailsComponent implements OnInit{
   placingOrder: boolean = false;
   successMessage: string = '';
   
+  // User info
+  user: any = null;
+  isFarmer: boolean = false;
+  
   service = inject(ProductService);
   cartService = inject(CartService);
   orderService = inject(OrderService);
@@ -34,6 +38,9 @@ export class ProductDetailsComponent implements OnInit{
   }
 
   ngOnInit(){
+    // Check if user is logged in and get user role
+    this.checkUserRole();
+    
     const productId = this.route.snapshot.paramMap.get('id');
     
     if (!productId) {
@@ -58,6 +65,19 @@ export class ProductDetailsComponent implements OnInit{
           this.product = null;
         }
       });
+  }
+
+  checkUserRole(): void {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        this.user = JSON.parse(userStr);
+        this.isFarmer = this.user?.role === 'farmer';
+      } catch (e) {
+        this.user = null;
+        this.isFarmer = false;
+      }
+    }
   }
 
   updateQuantity(event: Event): void {

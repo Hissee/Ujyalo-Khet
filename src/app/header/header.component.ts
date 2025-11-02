@@ -102,12 +102,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   navigateToEditAccount(): void {
-    if (this.user?.role === 'farmer') {
-      this.router.navigate(['/farmer-dashboard'], { fragment: 'profile' });
-    } else {
-      // Navigate to edit account page
-      this.router.navigate(['/edit-account']);
-    }
+    // Both farmers and consumers use the same edit-account route
+    this.router.navigate(['/edit-account']);
     this.showUserMenu = false;
   }
 

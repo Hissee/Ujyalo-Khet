@@ -1,6 +1,6 @@
 import { Router } from '@angular/router';
 import { IProduct,  } from '../Iproduct';
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, inject, OnInit, OnDestroy} from '@angular/core';
 import { CommonModule } from '@angular/common';
 // import {ProductListService} from './product-list.service';
 import {ProductService} from '../product.service';
@@ -12,17 +12,40 @@ import { CartService } from '../../cart/cart.service';
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
-export class ProductListComponent implements OnInit{
+export class ProductListComponent implements OnInit, OnDestroy {
   products: IProduct[] = [];
+  filteredProducts: IProduct[] = [];
+  allProducts: IProduct[] = [];
   service = inject(ProductService);
   router = inject(Router);
   cartService = inject(CartService);
+  
+  // User info
+  user: any = null;
+  isFarmer: boolean = false;
+  
+  // Category filter
+  selectedCategory: string = 'all';
+  categories: string[] = ['all', 'fruits', 'vegetables', 'grains', 'dairy', 'herbs', 'spices'];
+  
+  // Carousel properties
+  currentSlide = 0;
+  productsPerSlide = 4; // Desktop: 4 products per slide
+  productsPerSlideTablet = 3; // Tablet: 3 products per slide
+  productsPerSlideMobile = 1; // Mobile: 1 product per slide
 
   ngOnInit(){
+    // Check if user is logged in and get user role
+    this.checkUserRole();
+    
     this.service.listProducts()
       .subscribe({
         next: (data) => {
-          this.products = data;
+          this.allProducts = data;
+          this.applyFilter();
+          this.updateProductsPerSlide();
+          // Extract unique categories from products
+          this.extractCategories(data);
         },
         error: (err) => {
           console.log(err);
@@ -30,7 +53,110 @@ export class ProductListComponent implements OnInit{
         complete: () => {
           console.log('complete');
         }
-      })
+      });
+    
+    // Update products per slide on window resize
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', () => this.updateProductsPerSlide());
+    }
+  }
+
+  checkUserRole(): void {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        this.user = JSON.parse(userStr);
+        this.isFarmer = this.user?.role === 'farmer';
+      } catch (e) {
+        this.user = null;
+        this.isFarmer = false;
+      }
+    }
+  }
+
+  extractCategories(products: IProduct[]): void {
+    const uniqueCategories = new Set<string>();
+    products.forEach(product => {
+      if (product.category && product.category.trim()) {
+        uniqueCategories.add(product.category.toLowerCase().trim());
+      }
+    });
+    // Add common categories if not present, with 'all' first
+    const commonCategories = ['fruits', 'vegetables', 'grains', 'dairy', 'herbs', 'spices', 'other'];
+    this.categories = ['all', ...Array.from(uniqueCategories).sort()];
+  }
+
+  filterByCategory(category: string): void {
+    this.selectedCategory = category;
+    this.currentSlide = 0; // Reset to first slide when filtering
+    this.applyFilter();
+  }
+
+  applyFilter(): void {
+    if (this.selectedCategory === 'all') {
+      this.filteredProducts = [...this.allProducts];
+    } else {
+      this.filteredProducts = this.allProducts.filter(product => 
+        product.category && product.category.toLowerCase().trim() === this.selectedCategory.toLowerCase().trim()
+      );
+    }
+    this.products = this.filteredProducts;
+  }
+
+  ngOnDestroy() {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', () => this.updateProductsPerSlide());
+    }
+  }
+
+  updateProductsPerSlide(): void {
+    if (typeof window !== 'undefined') {
+      const width = window.innerWidth;
+      if (width < 768) {
+        this.productsPerSlide = this.productsPerSlideMobile;
+      } else if (width < 992) {
+        this.productsPerSlide = this.productsPerSlideTablet;
+      } else {
+        this.productsPerSlide = 4;
+      }
+    }
+  }
+
+  get totalSlides(): number {
+    if (this.products.length === 0) return 0;
+    return Math.ceil(this.products.length / this.productsPerSlide);
+  }
+
+  getProductsForSlide(slideIndex: number): IProduct[] {
+    const start = slideIndex * this.productsPerSlide;
+    const end = start + this.productsPerSlide;
+    return this.products.slice(start, end);
+  }
+
+  nextSlide(): void {
+    if (this.currentSlide < this.totalSlides - 1) {
+      this.currentSlide++;
+    } else {
+      this.currentSlide = 0; // Loop back to start
+    }
+  }
+
+  prevSlide(): void {
+    if (this.currentSlide > 0) {
+      this.currentSlide--;
+    } else {
+      this.currentSlide = this.totalSlides - 1; // Loop to end
+    }
+  }
+
+  goToSlide(index: number): void {
+    if (index >= 0 && index < this.totalSlides) {
+      this.currentSlide = index;
+    }
+  }
+
+  getSlideIndices(): number[] {
+    return Array.from({ length: this.totalSlides }, (_, i) => i);
   }
 
   handleImageError(event: Event) {
@@ -43,6 +169,18 @@ export class ProductListComponent implements OnInit{
   formatPrice(price: number | undefined): string {
     if (!price) return '0.00';
     return price.toFixed(2);
+  }
+
+  getCategoryBadgeClass(category: string): string {
+    if (!category) return '';
+    const cat = category.toLowerCase().trim();
+    if (cat === 'fruits') return 'badge-category-fruits';
+    if (cat === 'vegetables') return 'badge-category-vegetables';
+    if (cat === 'grains') return 'badge-category-grains';
+    if (cat === 'dairy') return 'badge-category-dairy';
+    if (cat === 'herbs') return 'badge-category-herbs';
+    if (cat === 'spices') return 'badge-category-spices';
+    return '';
   }
 
   navigateToProduct(productId: string | number) {

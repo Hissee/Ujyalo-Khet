@@ -211,6 +211,17 @@ export class ProductListComponent implements OnInit, OnDestroy {
   addToCart(event: Event, product: IProduct) {
     event.stopPropagation(); // Prevent card click navigation
     
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      this.toastService.warning('Please login to buy products');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 1500);
+      return;
+    }
+    
     if (!product || product.quantity <= 0) {
       this.toastService.warning('Product is out of stock!');
       return;

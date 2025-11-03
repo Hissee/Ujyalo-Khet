@@ -156,6 +156,17 @@ export class FilterComponent implements OnInit {
   addToCart(event: Event, product: IProduct): void {
     event.stopPropagation();
     
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      this.toastService.warning('Please login to buy products');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 1500);
+      return;
+    }
+    
     if (this.isFarmer) {
       return;
     }
@@ -165,8 +176,44 @@ export class FilterComponent implements OnInit {
       return;
     }
 
+    // Find the button element
+    let buttonElement: HTMLButtonElement | null = null;
+    const target = event.target as HTMLElement;
+    const currentTarget = event.currentTarget as HTMLElement;
+    
+    // Check if currentTarget is the button
+    if (currentTarget && currentTarget.tagName === 'BUTTON') {
+      buttonElement = currentTarget as HTMLButtonElement;
+    } else if (target) {
+      // If clicked on icon/span, traverse up to find button
+      let element: HTMLElement | null = target;
+      while (element && element.tagName !== 'BUTTON') {
+        element = element.parentElement;
+      }
+      buttonElement = element as HTMLButtonElement;
+    }
+
+    // Add product to cart
     this.cartService.addToCart(product, 1);
     this.toastService.success(`${product.name} successfully added to cart!`);
+
+    // Show success feedback if button found
+    if (buttonElement) {
+      const originalContent = buttonElement.innerHTML;
+      const originalDisabled = buttonElement.disabled;
+      
+      // Update button appearance
+      buttonElement.innerHTML = '<i class="fas fa-check"></i> Added to Cart';
+      buttonElement.disabled = true;
+      
+      // Reset button after 2 seconds
+      setTimeout(() => {
+        if (buttonElement) {
+          buttonElement.innerHTML = originalContent;
+          buttonElement.disabled = originalDisabled;
+        }
+      }, 2000);
+    }
   }
 
   getProductImage(product: IProduct): string {

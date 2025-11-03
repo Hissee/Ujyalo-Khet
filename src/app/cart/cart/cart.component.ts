@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { CartService } from '../cart.service';
 import { ICartItem } from '../Icart-item';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmationDialogService } from '../../services/confirmation-dialog.service';
 
 @Component({
   selector: 'app-cart',
@@ -20,7 +21,8 @@ export class CartComponent implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private router: Router,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private confirmationDialog: ConfirmationDialogService
   ) {}
 
   ngOnInit(): void {
@@ -71,18 +73,32 @@ export class CartComponent implements OnInit, OnDestroy {
     }
   }
 
-  removeItem(productId: string | number): void {
+  async removeItem(productId: string | number): Promise<void> {
     const item = this.cartItems.find(i => i.product.id === productId || i.product._id === productId);
     const productName = item?.product.name || 'Item';
     
-    if (confirm(`Are you sure you want to remove ${productName} from cart?`)) {
+    const confirmed = await this.confirmationDialog.show(
+      'Remove Item',
+      `Are you sure you want to remove ${productName} from cart?`,
+      'Remove',
+      'Cancel'
+    );
+    
+    if (confirmed) {
       this.cartService.removeFromCart(productId);
       this.toastService.success(`${productName} removed from cart`);
     }
   }
 
-  clearCart(): void {
-    if (confirm('Are you sure you want to clear the entire cart?')) {
+  async clearCart(): Promise<void> {
+    const confirmed = await this.confirmationDialog.show(
+      'Clear Cart',
+      'Are you sure you want to clear the entire cart? This action cannot be undone.',
+      'Clear Cart',
+      'Cancel'
+    );
+    
+    if (confirmed) {
       this.cartService.clearCart();
       this.toastService.success('Cart cleared successfully');
     }

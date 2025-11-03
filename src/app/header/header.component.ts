@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { filter } from 'rxjs/operators';
+import { filter } from 'rxjs';
 import { CartService } from '../cart/cart.service';
 import { NotificationService } from '../services/notification.service';
+import { ConfirmationDialogService } from '../services/confirmation-dialog.service';
 
 @Component({
   selector: 'app-header',
@@ -25,7 +26,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private router: Router,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private confirmationDialog: ConfirmationDialogService
   ) {}
 
   ngOnInit(): void {
@@ -135,8 +137,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.showUserMenu = false;
   }
 
-  confirmAndLogout(): void {
-    if (confirm('Are you sure you want to logout?')) {
+  async confirmAndLogout(): Promise<void> {
+    const confirmed = await this.confirmationDialog.show(
+      'Logout',
+      'Are you sure you want to logout?',
+      'Logout',
+      'Cancel'
+    );
+    
+    if (confirmed) {
       this.logout();
     }
   }

@@ -139,8 +139,7 @@
                 (click)="addToCart()"
                 [disabled]="addingToCart || product.quantity === 0 || orderQuantity <= 0">
                 @if (addingToCart) {
-                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Adding...
+                  <i class="fas fa-check"></i> Added to Cart
                 } @else {
                   <i class="fas fa-cart-plus"></i> Add to Cart
                 }

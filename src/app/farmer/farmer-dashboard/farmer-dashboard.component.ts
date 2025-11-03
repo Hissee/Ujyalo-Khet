@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FarmerService, DashboardStats, FarmerOrder, FarmerProduct } from '../../services/farmer.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmationDialogService } from '../../services/confirmation-dialog.service';
 
 @Component({
   selector: 'app-farmer-dashboard',
@@ -51,7 +53,9 @@ export class FarmerDashboardComponent implements OnInit {
   constructor(
     private farmerService: FarmerService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private toastService: ToastService,
+    private confirmationDialog: ConfirmationDialogService
   ) {}
 
   ngOnInit(): void {
@@ -172,13 +176,13 @@ export class FarmerDashboardComponent implements OnInit {
 
   updateOrderStatus(orderId: string): void {
     if (!this.newStatus) {
-      alert('Please select a status');
+      this.toastService.warning('Please select a status');
       return;
     }
 
     this.farmerService.updateOrderStatus(orderId, this.newStatus).subscribe({
       next: (response) => {
-        alert('Order status updated successfully!');
+        this.toastService.success('Order status updated successfully!');
         this.selectedOrder = null;
         this.newStatus = '';
         this.loadOrders();
@@ -186,7 +190,7 @@ export class FarmerDashboardComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error updating order status:', err);
-        alert(err.error?.message || 'Failed to update order status');
+        this.toastService.error(err.error?.message || 'Failed to update order status');
       }
     });
   }
@@ -243,20 +247,27 @@ export class FarmerDashboardComponent implements OnInit {
     this.router.navigate(['/updateproduct'], { queryParams: { id: productId } });
   }
 
-  deleteProduct(productId: string, productName: string): void {
-    if (!confirm(`Are you sure you want to delete "${productName}"? This action cannot be undone.`)) {
+  async deleteProduct(productId: string, productName: string): Promise<void> {
+    const confirmed = await this.confirmationDialog.show(
+      'Delete Product',
+      `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
+      'Delete',
+      'Cancel'
+    );
+
+    if (!confirmed) {
       return;
     }
 
     this.farmerService.deleteProduct(productId).subscribe({
       next: (response) => {
-        alert('Product deleted successfully!');
+        this.toastService.success('Product deleted successfully!');
         this.loadProducts(); // Refresh the product list
         this.loadDashboardData(); // Refresh stats
       },
       error: (err) => {
         console.error('Error deleting product:', err);
-        alert(err.error?.message || 'Failed to delete product. Make sure there are no active orders for this product.');
+        this.toastService.error(err.error?.message || 'Failed to delete product. Make sure there are no active orders for this product.');
       }
     });
   }
@@ -274,13 +285,14 @@ export class FarmerDashboardComponent implements OnInit {
     this.loadingProfile = true;
     this.farmerService.updateProfile(this.profileData).subscribe({
       next: (response) => {
-        alert('Profile updated successfully!');
+        this.toastService.success('Profile updated successfully!');
         this.profileEditMode = false;
         this.loadProfile(); // Reload to get updated data
       },
       error: (err) => {
         console.error('Error updating profile:', err);
         this.error = err.error?.message || 'Failed to update profile';
+        this.toastService.error(this.error || 'Failed to update profile');
         this.loadingProfile = false;
       }
     });

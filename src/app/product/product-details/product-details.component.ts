@@ -130,6 +130,17 @@ export class ProductDetailsComponent implements OnInit{
   }
 
   addToCart(): void {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (!token || !userStr) {
+      this.toastService.warning('Please login to buy products');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 1500);
+      return;
+    }
+
     if (!this.product) {
       this.toastService.error('Product not loaded');
       return;
@@ -151,7 +162,11 @@ export class ProductDetailsComponent implements OnInit{
     
     // Show success toast
     this.toastService.success(`Successfully added ${this.orderQuantity} ${this.product.name}(s) to cart!`);
-    this.addingToCart = false;
+    
+    // Reset after showing feedback
+    setTimeout(() => {
+      this.addingToCart = false;
+    }, 2000);
   }
 
   placeOrder(): void {

@@ -1,4 +1,5 @@
-<div class="toast-container" *ngIf="toasts.length > 0">
+@if (toasts.length > 0) {
+  <div class="toast-container">
   @for (toast of toasts; track toast.id) {
     <div 
       class="toast toast-{{ toast.type }} show"
@@ -20,5 +21,6 @@
       </div>
     </div>
   }
-</div>
+  </div>
+}
 

@@ -6,7 +6,7 @@
     </div>
     <div class="d-flex gap-2">
       <button 
-        class="btn btn-outline-primary" 
+        class="btn btn-outline-success" 
         (click)="refreshOrders(true)"
         [disabled]="refreshing || loading"
         title="Refresh orders">
@@ -25,7 +25,7 @@
 
   @if (loading) {
     <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
+      <div class="spinner-border text-success" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
       <p class="mt-2">Loading your orders...</p>
@@ -43,7 +43,7 @@
       <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
       <h4 class="mt-3">No orders yet</h4>
       <p class="text-muted">You haven't placed any orders. Start shopping to see your orders here!</p>
-      <button class="btn btn-primary mt-3" (click)="router.navigate(['/'])">
+      <button class="btn btn-success mt-3" (click)="router.navigate(['/'])">
         <i class="bi bi-cart"></i> Start Shopping
       </button>
     </div>
@@ -81,13 +81,13 @@
                   </p>
                   <p class="mb-0">
                     <strong>Payment Method:</strong> 
-                    <span class="text-capitalize badge bg-info">{{ order.paymentMethod.replace('_', ' ') }}</span>
+                    <span class="text-capitalize badge bg-success">{{ order.paymentMethod.replace('_', ' ') }}</span>
                   </p>
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                  <h4 class="text-primary mb-3">Rs {{ order.totalAmount.toFixed(2) }}</h4>
+                  <h4 class="text-success mb-3">Rs {{ order.totalAmount.toFixed(2) }}</h4>
                   <button 
-                    class="btn btn-primary"
+                    class="btn btn-success"
                     (click)="viewOrderDetail(order._id)">
                     <i class="bi bi-eye"></i> View Details
                   </button>

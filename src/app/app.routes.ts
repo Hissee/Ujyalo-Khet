@@ -19,6 +19,7 @@ import { OrderDetailComponent } from './order/order-detail/order-detail.componen
 import { UpdateProductComponent } from './product/update-product/update-product.component';
 import { AddProductComponent } from './product/add-product/add-product.component';
 import { NotificationComponent } from './notification/notification.component';
+import { FilterComponent } from './product/filter/filter.component';
 
 
 export const routes: Routes = [
@@ -98,6 +99,10 @@ export const routes: Routes = [
   {
     path: 'notifications',
     component: NotificationComponent,
+  },
+  {
+    path: 'filter',
+    component: FilterComponent,
   },
   {
     path: '**',

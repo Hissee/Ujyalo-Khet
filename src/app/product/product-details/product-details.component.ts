@@ -6,6 +6,7 @@ import { IProduct} from '../Iproduct';
 import {ProductService} from '../product.service';
 import { CartService } from '../../cart/cart.service';
 import { OrderService } from '../../services/order.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-product-details',
@@ -30,6 +31,7 @@ export class ProductDetailsComponent implements OnInit{
   service = inject(ProductService);
   cartService = inject(CartService);
   orderService = inject(OrderService);
+  toastService = inject(ToastService);
   
   constructor(
     private route: ActivatedRoute,
@@ -81,7 +83,7 @@ export class ProductDetailsComponent implements OnInit{
   }
 
   getProductImage(): string {
-    if (!this.product) return 'https://via.placeholder.com/400x400?text=No+Image';
+    if (!this.product) return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
     
     // Prefer images array with URLs
     if (this.product.images && Array.isArray(this.product.images) && this.product.images.length > 0) {
@@ -98,7 +100,7 @@ export class ProductDetailsComponent implements OnInit{
       return this.product.image;
     }
     
-    return 'https://via.placeholder.com/400x400?text=No+Image';
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
   }
 
   updateQuantity(event: Event): void {
@@ -110,7 +112,7 @@ export class ProductDetailsComponent implements OnInit{
       } else {
         this.orderQuantity = this.product.quantity;
         input.value = this.product.quantity.toString();
-        alert(`Maximum available quantity is ${this.product.quantity}`);
+        this.toastService.warning(`Maximum available quantity is ${this.product.quantity}`);
       }
     }
   }
@@ -129,56 +131,49 @@ export class ProductDetailsComponent implements OnInit{
 
   addToCart(): void {
     if (!this.product) {
-      this.error = 'Product not loaded';
+      this.toastService.error('Product not loaded');
       return;
     }
 
     if (this.orderQuantity > this.product.quantity) {
-      this.error = `Cannot add ${this.orderQuantity} items. Only ${this.product.quantity} available.`;
+      this.toastService.error(`Cannot add ${this.orderQuantity} items. Only ${this.product.quantity} available.`);
       return;
     }
 
     if (this.orderQuantity <= 0) {
-      this.error = 'Quantity must be at least 1';
+      this.toastService.error('Quantity must be at least 1');
       return;
     }
 
     this.addingToCart = true;
-    this.error = '';
-    this.successMessage = '';
     
     this.cartService.addToCart(this.product, this.orderQuantity);
     
-    // Show success message
-    this.successMessage = `Added ${this.orderQuantity} ${this.product.name} to cart!`;
+    // Show success toast
+    this.toastService.success(`Successfully added ${this.orderQuantity} ${this.product.name}(s) to cart!`);
     this.addingToCart = false;
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      this.successMessage = '';
-    }, 3000);
   }
 
   placeOrder(): void {
     if (!this.product) {
-      this.error = 'Product not loaded';
+      this.toastService.error('Product not loaded');
       return;
     }
 
     if (this.orderQuantity > this.product.quantity) {
-      this.error = `Cannot order ${this.orderQuantity} items. Only ${this.product.quantity} available.`;
+      this.toastService.error(`Cannot order ${this.orderQuantity} items. Only ${this.product.quantity} available.`);
       return;
     }
 
     if (this.orderQuantity <= 0) {
-      this.error = 'Quantity must be at least 1';
+      this.toastService.error('Quantity must be at least 1');
       return;
     }
 
     // Check if user is logged in
     const token = localStorage.getItem('token');
     if (!token) {
-      this.error = 'Please login to place an order';
+      this.toastService.error('Please login to place an order');
       // Optionally redirect to login
       setTimeout(() => {
         this.router.navigate(['/login']);
@@ -205,7 +200,7 @@ export class ProductDetailsComponent implements OnInit{
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     if (img) {
-      img.src = 'https://via.placeholder.com/400x400?text=No+Image';
+      img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
     }
   }
 }

@@ -204,8 +204,8 @@ export class FarmerDashboardComponent implements OnInit {
   getStatusBadgeClass(status: string): string {
     const classes: { [key: string]: string } = {
       'pending': 'bg-warning',
-      'confirmed': 'bg-info',
-      'processing': 'bg-primary',
+      'confirmed': 'bg-success',
+      'processing': 'bg-success',
       'shipped': 'bg-secondary',
       'delivered': 'bg-success',
       'cancelled': 'bg-danger'

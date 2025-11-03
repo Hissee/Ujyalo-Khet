@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CartService } from '../cart.service';
 import { ICartItem } from '../Icart-item';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-cart',
@@ -18,7 +19,8 @@ export class CartComponent implements OnInit, OnDestroy {
 
   constructor(
     private cartService: CartService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -53,8 +55,9 @@ export class CartComponent implements OnInit, OnDestroy {
     const newQuantity = item.quantity + 1;
     if (newQuantity <= item.product.quantity) {
       this.cartService.updateQuantity(item.product.id, newQuantity);
+      this.toastService.info(`Updated ${item.product.name} quantity to ${newQuantity}`);
     } else {
-      alert(`Maximum available quantity is ${item.product.quantity}`);
+      this.toastService.warning(`Maximum available quantity is ${item.product.quantity}`);
     }
   }
 
@@ -62,20 +65,26 @@ export class CartComponent implements OnInit, OnDestroy {
     const newQuantity = item.quantity - 1;
     if (newQuantity > 0) {
       this.cartService.updateQuantity(item.product.id, newQuantity);
+      this.toastService.info(`Updated ${item.product.name} quantity to ${newQuantity}`);
     } else {
       this.removeItem(item.product.id);
     }
   }
 
   removeItem(productId: string | number): void {
-    if (confirm('Are you sure you want to remove this item from cart?')) {
+    const item = this.cartItems.find(i => i.product.id === productId || i.product._id === productId);
+    const productName = item?.product.name || 'Item';
+    
+    if (confirm(`Are you sure you want to remove ${productName} from cart?`)) {
       this.cartService.removeFromCart(productId);
+      this.toastService.success(`${productName} removed from cart`);
     }
   }
 
   clearCart(): void {
     if (confirm('Are you sure you want to clear the entire cart?')) {
       this.cartService.clearCart();
+      this.toastService.success('Cart cleared successfully');
     }
   }
 
@@ -85,7 +94,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
   checkout(): void {
     if (this.cartItems.length === 0) {
-      alert('Your cart is empty!');
+      this.toastService.warning('Your cart is empty!');
       return;
     }
     this.router.navigate(['/checkout']);

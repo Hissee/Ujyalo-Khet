@@ -5,14 +5,14 @@
 <div class="container my-5">
   @if (loading) {
     <div class="text-center py-5">
-      <div class="spinner-border text-primary" role="status">
+      <div class="spinner-border text-success" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
       <p class="mt-2">Loading products...</p>
     </div>
   } @else if (categories.length === 0) {
     <div class="text-center py-5">
-      <i class="bi bi-box-seam" style="font-size: 3rem; color: #ccc;"></i>
+      <i class="fas fa-box" style="font-size: 3rem; color: #ccc;"></i>
       <p class="text-muted mt-3">No products available</p>
     </div>
   } @else {
@@ -21,32 +21,35 @@
         <!-- Category Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
           <h3 class="category-title">
-            <i class="bi {{ getCategoryIcon(categoryGroup.category) }}"></i>
+            <i class="fas {{ getCategoryIcon(categoryGroup.category) }}"></i>
             {{ categoryGroup.category }}
           </h3>
-          @if (getTotalSlides(categoryGroup) > 1) {
-            <div class="carousel-controls">
-              <button 
-                class="btn btn-outline-primary carousel-nav-btn" 
-                (click)="prevSlide(categoryGroup)"
-                [disabled]="getTotalSlides(categoryGroup) <= 1">
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <span class="mx-2 text-muted">
-                {{ categoryGroup.currentSlide + 1 }} / {{ getTotalSlides(categoryGroup) }}
-              </span>
-              <button 
-                class="btn btn-outline-primary carousel-nav-btn" 
-                (click)="nextSlide(categoryGroup)"
-                [disabled]="getTotalSlides(categoryGroup) <= 1">
-                <i class="bi bi-chevron-right"></i>
-              </button>
-            </div>
-          }
+          <button 
+            class="btn btn-success"
+            (click)="navigateToFilter(categoryGroup.category)"
+            type="button">
+            <i class="fas fa-filter"></i> See All
+          </button>
         </div>
 
         <!-- Products Carousel -->
-        <div class="product-carousel-container">
+        <div class="product-carousel-container" style="position: relative;">
+          <!-- Overlay Navigation Buttons -->
+          <button 
+            class="btn carousel-overlay-btn carousel-overlay-btn-prev"
+            (click)="prevSlide(categoryGroup)"
+            [disabled]="getTotalSlides(categoryGroup) <= 1"
+            type="button">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <button 
+            class="btn carousel-overlay-btn carousel-overlay-btn-next"
+            (click)="nextSlide(categoryGroup)"
+            [disabled]="getTotalSlides(categoryGroup) <= 1"
+            type="button">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+
           <div class="product-carousel-track" [style.transform]="'translateX(-' + (categoryGroup.currentSlide * 100) + '%)'">
             @for (slideIndex of getSlideIndices(categoryGroup); track slideIndex) {
               <div class="product-carousel-slide">
@@ -63,7 +66,7 @@
                             (error)="handleImageError($event)">
                           @if (product.organic) {
                             <span class="product-badge organic-badge">
-                              <i class="bi bi-leaf"></i> Organic
+                              <i class="fas fa-leaf"></i> Organic
                             </span>
                           }
                         </div>
@@ -84,9 +87,14 @@
                             </div>
                           </div>
 
+                          @if (product.location) {
+                            <div class="product-location">
+                              <i class="fas fa-map-marker-alt"></i> {{ product.location }}
+                            </div>
+                          }
                           @if (product.farmerName) {
                             <div class="product-farmer">
-                              <i class="bi bi-person"></i> {{ product.farmerName }}
+                              <i class="fas fa-user"></i> {{ product.farmerName }}
                             </div>
                           }
 
@@ -96,7 +104,7 @@
                               class="btn btn-success w-100 mt-3"
                               (click)="addToCart($event, product)"
                               [disabled]="product.quantity <= 0">
-                              <i class="bi bi-cart-plus"></i>
+                              <i class="fas fa-cart-plus"></i>
                               @if (product.quantity <= 0) {
                                 Out of Stock
                               } @else {
@@ -113,22 +121,6 @@
             }
           </div>
         </div>
-
-        <!-- Carousel Indicators -->
-        @if (getTotalSlides(categoryGroup) > 1) {
-          <div class="carousel-indicators-wrapper mt-3">
-            <div class="carousel-indicators">
-              @for (slideIndex of getSlideIndices(categoryGroup); track slideIndex) {
-                <button
-                  class="carousel-indicator"
-                  [class.active]="categoryGroup.currentSlide === slideIndex"
-                  (click)="categoryGroup.currentSlide = slideIndex"
-                  [attr.aria-label]="'Go to slide ' + (slideIndex + 1)">
-                </button>
-              }
-            </div>
-          </div>
-        }
       </div>
     }
   }

@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } 
 import { Router } from '@angular/router';
 import { FarmerService } from '../../services/farmer.service';
 import { ImageUploadService } from '../../services/image-upload.service';
+import { ToastService } from '../../services/toast.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -33,7 +34,8 @@ export class AddProductComponent {
     private fb: FormBuilder,
     private router: Router,
     private farmerService: FarmerService,
-    private imageUploadService: ImageUploadService
+    private imageUploadService: ImageUploadService,
+    private toastService: ToastService
   ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -42,7 +44,8 @@ export class AddProductComponent {
       price: ['', [Validators.required, Validators.min(0.01)]],
       quantity: ['', [Validators.required, Validators.min(0.01)]],
       harvestDate: [''],
-      organic: [false]
+      organic: [false],
+      location: ['']
     });
   }
 
@@ -52,7 +55,7 @@ export class AddProductComponent {
       const files = Array.from(input.files).filter(file => file.type.startsWith('image/'));
       
       if (files.length === 0) {
-        this.error = 'Please select only image files';
+        this.toastService.error('Please select only image files');
         return;
       }
 
@@ -64,7 +67,7 @@ export class AddProductComponent {
         return this.imageUploadService.uploadToImgur(file).pipe(
           catchError(err => {
             console.error(`Error uploading ${file.name}:`, err);
-            this.error = `Failed to upload ${file.name}. Please try a direct URL instead.`;
+            this.toastService.error(`Failed to upload ${file.name}. Please try a direct URL instead.`);
             return of(null);
           })
         );
@@ -76,12 +79,14 @@ export class AddProductComponent {
           this.imageUrls.push(...successfulUrls);
           this.uploadingImages = false;
           if (successfulUrls.length < files.length) {
-            this.error = `Successfully uploaded ${successfulUrls.length} of ${files.length} images. Some failed.`;
+            this.toastService.warning(`Successfully uploaded ${successfulUrls.length} of ${files.length} images. Some failed.`);
+          } else {
+            this.toastService.success(`Successfully uploaded ${successfulUrls.length} image(s).`);
           }
         },
         error: (err) => {
           console.error('Error uploading images:', err);
-          this.error = 'Failed to upload images. Please try using direct URLs instead.';
+          this.toastService.error('Failed to upload images. Please try using direct URLs instead.');
           this.uploadingImages = false;
         }
       });
@@ -115,7 +120,7 @@ export class AddProductComponent {
           this.error = null;
         }
       } else {
-        this.error = 'Please enter a valid image URL (http:// or https://). Supported: Google Photos, Imgur, Google Drive, Dropbox, etc.';
+        this.toastService.error('Please enter a valid image URL (http:// or https://). Supported: Google Photos, Imgur, Google Drive, Dropbox, etc.');
       }
     }
   }
@@ -149,7 +154,7 @@ export class AddProductComponent {
 
     this.farmerService.addProduct(productData).subscribe({
       next: (response) => {
-        this.successMessage = response.message || 'Product added successfully!';
+        this.toastService.success(response.message || 'Product added successfully!');
         this.submitting = false;
         
         setTimeout(() => {
@@ -158,7 +163,7 @@ export class AddProductComponent {
       },
       error: (err) => {
         console.error('Error adding product:', err);
-        this.error = err.error?.message || 'Failed to add product';
+        this.toastService.error(err.error?.message || 'Failed to add product');
         this.submitting = false;
       }
     });

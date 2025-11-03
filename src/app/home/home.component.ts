@@ -5,6 +5,7 @@ import { ProductService } from '../product/product.service';
 import { IProduct } from '../product/Iproduct';
 import { CarouselComponent } from '../carousel/carousel.component';
 import { CartService } from '../cart/cart.service';
+import { ToastService } from '../services/toast.service';
 
 interface CategoryGroup {
   category: string;
@@ -28,7 +29,8 @@ export class HomeComponent implements OnInit {
   constructor(
     private router: Router,
     private productService: ProductService,
-    private cartService: CartService
+    private cartService: CartService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -146,11 +148,12 @@ export class HomeComponent implements OnInit {
     }
 
     if (product.quantity <= 0) {
-      alert('Product is out of stock');
+      this.toastService.warning('Product is out of stock');
       return;
     }
 
     this.cartService.addToCart(product, 1);
+    this.toastService.success(`${product.name} successfully added to cart!`);
   }
 
   viewProduct(product: IProduct): void {
@@ -158,15 +161,23 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/view-product', productId]);
   }
 
+  navigateToFilter(category?: string): void {
+    const queryParams: any = {};
+    if (category && category.toLowerCase() !== 'all') {
+      queryParams.category = category.toLowerCase();
+    }
+    this.router.navigate(['/filter'], { queryParams });
+  }
+
   getCategoryIcon(category: string): string {
     const cat = category.toLowerCase();
-    if (cat === 'fruits') return 'bi-apple';
-    if (cat === 'vegetables') return 'bi-flower1';
-    if (cat === 'grains') return 'bi-basket';
-    if (cat === 'dairy') return 'bi-cup-straw';
-    if (cat === 'herbs') return 'bi-flower2';
-    if (cat === 'spices') return 'bi-star';
-    return 'bi-box';
+    if (cat === 'fruits') return 'fa-apple-alt';
+    if (cat === 'vegetables') return 'fa-carrot';
+    if (cat === 'grains') return 'fa-bread-slice';
+    if (cat === 'dairy') return 'fa-cheese';
+    if (cat === 'herbs') return 'fa-leaf';
+    if (cat === 'spices') return 'fa-pepper-hot';
+    return 'fa-box';
   }
 
   getProductImage(product: any): string {
@@ -184,13 +195,13 @@ export class HomeComponent implements OnInit {
     if (product.image) {
       return product.image;
     }
-    return 'https://via.placeholder.com/300x200?text=No+Image';
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
   }
 
   handleImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
     if (img) {
-      img.src = 'https://via.placeholder.com/300x200?text=No+Image';
+      img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
     }
   }
 }

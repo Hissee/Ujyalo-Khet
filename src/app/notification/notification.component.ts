@@ -88,46 +88,33 @@ export class NotificationComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteNotification(notificationId: string): void {
-    this.notificationService.deleteNotification(notificationId).subscribe({
-      next: () => {
-        this.notifications = this.notifications.filter(n => n._id !== notificationId);
-        const unreadCount = this.notifications.filter(n => !n.read).length;
-        this.notificationService.updateUnreadCount(unreadCount);
-      },
-      error: (err) => {
-        console.error('Error deleting notification:', err);
-      }
-    });
-  }
-
   getNotificationIcon(type: string): string {
     switch (type) {
       case 'order_placed':
-        return 'bi-cart-plus';
+        return 'fa-cart-plus';
       case 'order_confirmed':
-        return 'bi-check-circle';
+        return 'fa-check-circle';
       case 'order_processing':
-        return 'bi-arrow-repeat';
+        return 'fa-redo';
       case 'order_loaded':
-        return 'bi-box-seam';
+        return 'fa-box';
       case 'order_delivered':
-        return 'bi-truck';
+        return 'fa-truck';
       case 'order_payment_completed':
-        return 'bi-credit-card';
+        return 'fa-credit-card';
       default:
-        return 'bi-bell';
+        return 'fa-bell';
     }
   }
 
   getNotificationColor(type: string): string {
     switch (type) {
       case 'order_placed':
-        return 'text-primary';
+        return 'text-success';
       case 'order_confirmed':
         return 'text-success';
       case 'order_processing':
-        return 'text-info';
+        return 'text-success';
       case 'order_loaded':
         return 'text-warning';
       case 'order_delivered':

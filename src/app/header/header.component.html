@@ -10,17 +10,17 @@
     <!-- Home - Only visible if not logged in as farmer -->
     @if (!isLoggedIn || (isLoggedIn && user?.role !== 'farmer')) {
     <a routerLink="./" class="nav-link-item">
-      <i class="bi bi-house"></i> Home
+      <i class="fas fa-home"></i> Home
     </a>
     }
 
     <!-- Not logged in: Show Signup and Login -->
     @if (!isLoggedIn) {
       <a routerLink="./signup" class="nav-link-item">
-        <i class="bi bi-person-plus"></i> Sign Up
+        <i class="fas fa-user-plus"></i> Sign Up
       </a>
       <a routerLink="./login" class="nav-link-item">
-        <i class="bi bi-box-arrow-in-right"></i> Login
+        <i class="fas fa-sign-in-alt"></i> Login
       </a>
     }
 
@@ -29,7 +29,7 @@
       <!-- Cart - Only for consumers -->
       @if (user?.role === 'consumer' || user?.role === 'customer') {
         <a routerLink="./cart" class="nav-link-item cart-link">
-          <i class="bi bi-cart"></i> Cart
+          <i class="fas fa-shopping-cart"></i> Cart
           @if (cartItemCount > 0) {
             <span class="cart-badge">{{ cartItemCount }}</span>
           }
@@ -38,7 +38,7 @@
 
       <!-- Notifications -->
       <a routerLink="./notifications" class="nav-link-item notification-btn">
-        <i class="bi bi-bell"></i> Notifications
+        <i class="fas fa-bell"></i> Notifications
         @if (notificationCount > 0) {
           <span class="notification-badge">{{ notificationCount }}</span>
         }
@@ -51,7 +51,7 @@
           type="button" 
           (click)="toggleUserMenu()"
           [class.active]="showUserMenu">
-          <i class="bi bi-list"></i> Menu
+          <i class="fas fa-bars"></i> Menu
         </button>
 
         <!-- User Dropdown Menu -->
@@ -60,29 +60,29 @@
             <div class="dropdown-menu-items">
               @if (user?.role === 'farmer') {
                 <a routerLink="./farmer-dashboard" (click)="closeUserMenu()" class="dropdown-item">
-                  <i class="bi bi-speedometer2"></i> Dashboard
+                  <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
                 <a routerLink="./addproduct" (click)="closeUserMenu()" class="dropdown-item">
-                  <i class="bi bi-plus-circle"></i> Add Product
+                  <i class="fas fa-plus-circle"></i> Add Product
                 </a>
               }
               @if (user?.role === 'consumer' || user?.role === 'customer') {
                 <a routerLink="./orders" (click)="closeUserMenu()" class="dropdown-item">
-                  <i class="bi bi-bag-check"></i> My Orders
+                  <i class="fas fa-shopping-bag"></i> My Orders
                 </a>
               }
               <a (click)="navigateToEditAccount(); closeUserMenu()" class="dropdown-item">
-                <i class="bi bi-pencil-square"></i> Edit Account
+                <i class="fas fa-edit"></i> Edit Account
               </a>
               <a routerLink="./contact" (click)="closeUserMenu()" class="dropdown-item">
-                <i class="bi bi-envelope"></i> Contact
+                <i class="fas fa-envelope"></i> Contact
               </a>
               <a routerLink="./about" (click)="closeUserMenu()" class="dropdown-item">
-                <i class="bi bi-info-circle"></i> About
+                <i class="fas fa-info-circle"></i> About
               </a>
               <hr>
               <a (click)="confirmAndLogout(); closeUserMenu()" class="dropdown-item logout-item">
-                <i class="bi bi-box-arrow-right"></i> Logout
+                <i class="fas fa-sign-out-alt"></i> Logout
               </a>
             </div>
           </div>

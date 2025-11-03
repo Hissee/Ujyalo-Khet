@@ -171,12 +171,12 @@
           <hr>
           <div class="d-flex justify-content-between mb-4">
             <h5>Total:</h5>
-            <h5 class="text-primary">Rs {{ totalPrice.toFixed(2) }}</h5>
+            <h5 class="text-success">Rs {{ totalPrice.toFixed(2) }}</h5>
           </div>
 
           <button
             type="button"
-            class="btn btn-primary btn-lg w-100"
+            class="btn btn-success btn-lg w-100"
             (click)="placeOrder()"
             [disabled]="loading || cartItems.length === 0 || !canPlaceOrder()">
             @if (loading) {

@@ -6,6 +6,7 @@ import { CartService } from '../cart/cart.service';
 import { OrderService, OrderRequest } from '../services/order.service';
 import { ICartItem } from '../cart/Icart-item';
 import { Endpoint } from '../const/end-point';
+import { ToastService } from '../services/toast.service';
 
 declare var KhaltiCheckout: any;
 
@@ -52,7 +53,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private orderService: OrderService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -109,7 +111,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Check if user is logged in
     const token = localStorage.getItem('token');
     if (!token) {
-      this.error = 'Please login to place an order.';
+      this.toastService.error('Please login to place an order.');
       setTimeout(() => {
         this.router.navigate(['/login']);
       }, 2000);
@@ -118,7 +120,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     // Check if cart is empty
     if (this.cartItems.length === 0) {
-      this.error = 'Your cart is empty. Please add products to cart.';
+      this.toastService.warning('Your cart is empty. Please add products to cart.');
       return;
     }
 
@@ -134,26 +136,26 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   private validateForm(): boolean {
     if (!this.deliveryAddress.province?.trim()) {
-      this.error = 'Please select a province';
+      this.toastService.error('Please select a province');
       return false;
     }
     if (!this.deliveryAddress.city?.trim()) {
-      this.error = 'Please enter city';
+      this.toastService.error('Please enter city');
       return false;
     }
     if (!this.deliveryAddress.street?.trim()) {
-      this.error = 'Please enter street address';
+      this.toastService.error('Please enter street address');
       return false;
     }
     if (!this.deliveryAddress.phone?.trim()) {
-      this.error = 'Please enter phone number';
+      this.toastService.error('Please enter phone number');
       return false;
     }
     
     // Validate phone number format (10 digits)
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(this.deliveryAddress.phone.trim())) {
-      this.error = 'Phone number must be exactly 10 digits';
+      this.toastService.error('Phone number must be exactly 10 digits');
       return false;
     }
     
@@ -234,12 +236,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           // Clear cart
           this.cartService.clearCart();
           
-          // Show success message
+          // Show success toast
           const orderId = response.orderId || 'N/A';
-          alert(`✅ Order placed successfully!\n\nOrder ID: ${orderId}\n\nYou will receive a confirmation shortly.`);
+          this.toastService.success(`Order placed successfully! Order ID: ${orderId}. You will receive a confirmation shortly.`);
           
-          // Redirect to home page
-          this.router.navigate(['/']);
+          // Redirect to home page after a short delay
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, 2000);
         },
         error: (err) => {
         console.error('Order error:', err);
@@ -517,7 +521,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     if (e.event === 'CLOSED') {
       // Payment window closed
       this.loading = false;
-      this.error = 'Payment was cancelled. Please try again.';
+      this.toastService.warning('Payment was cancelled. Please try again.');
       return;
     }
 
@@ -528,7 +532,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     if (e.event === 'ERROR') {
       // Payment failed
-      this.error = 'Payment failed. Please try again.';
+      this.toastService.error('Payment failed. Please try again.');
       this.loading = false;
     }
   }
@@ -547,17 +551,19 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           // Clear cart
           this.cartService.clearCart();
           
-          // Show success and redirect
-          alert('Payment successful! Order ID: ' + response.orderId);
-          this.router.navigate(['/']);
+          // Show success toast and redirect
+          this.toastService.success(`Payment successful! Order ID: ${response.orderId}. Your order has been confirmed.`);
+          setTimeout(() => {
+            this.router.navigate(['/']);
+          }, 2000);
         } else {
-          this.error = response.message || 'Payment verification failed';
+          this.toastService.error(response.message || 'Payment verification failed');
           this.loading = false;
         }
       },
       error: (err) => {
         console.error('Payment verification error:', err);
-        this.error = err.error?.message || 'Payment verification failed. Please contact support.';
+        this.toastService.error(err.error?.message || 'Payment verification failed. Please contact support.');
         this.loading = false;
       }
     });

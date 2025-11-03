@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FarmerService } from '../../services/farmer.service';
 import { ProductService } from '../product.service';
 import { ImageUploadService } from '../../services/image-upload.service';
+import { ToastService } from '../../services/toast.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -36,7 +37,8 @@ export class UpdateProductComponent implements OnInit {
     private router: Router,
     private farmerService: FarmerService,
     private productService: ProductService,
-    private imageUploadService: ImageUploadService
+    private imageUploadService: ImageUploadService,
+    private toastService: ToastService
   ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -45,7 +47,8 @@ export class UpdateProductComponent implements OnInit {
       price: ['', [Validators.required, Validators.min(0.01)]],
       quantity: ['', [Validators.required, Validators.min(0.01)]],
       harvestDate: [''],
-      organic: [false]
+      organic: [false],
+      location: ['']
     });
   }
 
@@ -73,7 +76,8 @@ export class UpdateProductComponent implements OnInit {
           price: product.price,
           quantity: product.quantity,
           harvestDate: product.harvestDate || '',
-          organic: product.organic || false
+          organic: product.organic || false,
+          location: product.location || ''
         });
         
         // Load existing images (filter to only URLs, not base64)
@@ -91,7 +95,7 @@ export class UpdateProductComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error loading product:', err);
-        this.error = err.error?.message || 'Failed to load product';
+        this.toastService.error(err.error?.message || 'Failed to load product');
         this.loading = false;
       }
     });
@@ -103,7 +107,7 @@ export class UpdateProductComponent implements OnInit {
       const files = Array.from(input.files).filter(file => file.type.startsWith('image/'));
       
       if (files.length === 0) {
-        this.error = 'Please select only image files';
+        this.toastService.error('Please select only image files');
         return;
       }
 
@@ -115,7 +119,7 @@ export class UpdateProductComponent implements OnInit {
         return this.imageUploadService.uploadToImgur(file).pipe(
           catchError(err => {
             console.error(`Error uploading ${file.name}:`, err);
-            this.error = `Failed to upload ${file.name}. Please try a direct URL instead.`;
+            this.toastService.error(`Failed to upload ${file.name}. Please try a direct URL instead.`);
             return of(null);
           })
         );
@@ -127,12 +131,14 @@ export class UpdateProductComponent implements OnInit {
           this.imageUrls.push(...successfulUrls);
           this.uploadingImages = false;
           if (successfulUrls.length < files.length) {
-            this.error = `Successfully uploaded ${successfulUrls.length} of ${files.length} images. Some failed.`;
+            this.toastService.warning(`Successfully uploaded ${successfulUrls.length} of ${files.length} images. Some failed.`);
+          } else {
+            this.toastService.success(`Successfully uploaded ${successfulUrls.length} image(s).`);
           }
         },
         error: (err) => {
           console.error('Error uploading images:', err);
-          this.error = 'Failed to upload images. Please try using direct URLs instead.';
+          this.toastService.error('Failed to upload images. Please try using direct URLs instead.');
           this.uploadingImages = false;
         }
       });
@@ -166,7 +172,7 @@ export class UpdateProductComponent implements OnInit {
           this.error = null;
         }
       } else {
-        this.error = 'Please enter a valid image URL (http:// or https://). Supported: Google Photos, Imgur, Google Drive, Dropbox, etc.';
+        this.toastService.error('Please enter a valid image URL (http:// or https://). Supported: Google Photos, Imgur, Google Drive, Dropbox, etc.');
       }
     }
   }
@@ -188,7 +194,6 @@ export class UpdateProductComponent implements OnInit {
 
     this.submitting = true;
     this.error = null;
-    this.successMessage = '';
 
     // Filter out any base64 data URLs and only keep actual URLs
     const validImageUrls = this.imageUrls.filter(url => {
@@ -204,7 +209,7 @@ export class UpdateProductComponent implements OnInit {
 
     this.farmerService.updateProduct(this.productId, productData).subscribe({
       next: (response) => {
-        this.successMessage = response.message || 'Product updated successfully!';
+        this.toastService.success(response.message || 'Product updated successfully!');
         this.submitting = false;
         
         setTimeout(() => {
@@ -213,7 +218,7 @@ export class UpdateProductComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error updating product:', err);
-        this.error = err.error?.message || 'Failed to update product';
+        this.toastService.error(err.error?.message || 'Failed to update product');
         this.submitting = false;
       }
     });

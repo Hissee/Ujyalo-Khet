@@ -146,11 +146,11 @@ export class OrderDetailComponent implements OnInit {
       case 'pending':
         return 'bg-warning text-dark';
       case 'confirmed':
-        return 'bg-info';
+        return 'bg-success';
       case 'processing':
-        return 'bg-info';
+        return 'bg-success';
       case 'shipped':
-        return 'bg-primary';
+        return 'bg-success';
       case 'delivered':
         return 'bg-success';
       case 'cancelled':

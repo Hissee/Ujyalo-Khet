@@ -2,36 +2,36 @@
   <div class="row justify-content-center">
     <div class="col-lg-8">
       <div class="card shadow">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
           <h4 class="mb-0">
-            <i class="bi bi-bell"></i> Notifications
+            <i class="fas fa-bell"></i> Notifications
           </h4>
           <div>
             @if (getUnreadCount() > 0) {
               <button class="btn btn-sm btn-light" (click)="markAllAsRead()">
-                <i class="bi bi-check-all"></i> Mark all as read
+                <i class="fas fa-check-double"></i> Mark all as read
               </button>
             }
             <button class="btn btn-sm btn-light ms-2" (click)="loadNotifications()">
-              <i class="bi bi-arrow-clockwise"></i> Refresh
+              <i class="fas fa-sync-alt"></i> Refresh
             </button>
           </div>
         </div>
         <div class="card-body">
           @if (loading) {
             <div class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
+              <div class="spinner-border text-success" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
               <p class="mt-2">Loading notifications...</p>
             </div>
           } @else if (error) {
             <div class="alert alert-danger" role="alert">
-              <i class="bi bi-exclamation-triangle"></i> {{ error }}
+              <i class="fas fa-exclamation-triangle"></i> {{ error }}
             </div>
           } @else if (notifications.length === 0) {
             <div class="text-center py-5">
-              <i class="bi bi-bell-slash" style="font-size: 3rem; color: #ccc;"></i>
+              <i class="fas fa-bell-slash" style="font-size: 3rem; color: #ccc;"></i>
               <p class="text-muted mt-3">No notifications yet</p>
             </div>
           } @else {
@@ -45,7 +45,7 @@
                     <div class="flex-grow-1">
                       <div class="d-flex align-items-center mb-2">
                         <i 
-                          class="bi {{ getNotificationIcon(notification.type) }} {{ getNotificationColor(notification.type) }} me-2"
+                          class="fas {{ getNotificationIcon(notification.type) }} {{ getNotificationColor(notification.type) }} me-2"
                           style="font-size: 1.5rem;"></i>
                         <h6 class="mb-0" [class.text-white]="!notification.read">
                           {{ notification.title }}
@@ -61,12 +61,6 @@
                         {{ formatDate(notification.createdAt) }}
                       </small>
                     </div>
-                    <button 
-                      class="btn btn-sm btn-outline-danger ms-2"
-                      (click)="deleteNotification(notification._id); $event.stopPropagation()"
-                      title="Delete notification">
-                      <i class="bi bi-trash"></i>
-                    </button>
                   </div>
                 </div>
               }

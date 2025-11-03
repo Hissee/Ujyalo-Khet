@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 // import {ProductListService} from './product-list.service';
 import {ProductService} from '../product.service';
 import { CartService } from '../../cart/cart.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-product-list',
@@ -19,6 +20,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   service = inject(ProductService);
   router = inject(Router);
   cartService = inject(CartService);
+  toastService = inject(ToastService);
   
   // User info
   user: any = null;
@@ -175,13 +177,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
       return product.image;
     }
     
-    return 'https://via.placeholder.com/300x200?text=No+Image';
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
   }
 
   handleImageError(event: Event) {
     const img = event.target as HTMLImageElement;
     if (img) {
-      img.src = 'https://via.placeholder.com/300x200?text=No+Image';
+      img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
     }
   }
 
@@ -210,7 +212,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
     event.stopPropagation(); // Prevent card click navigation
     
     if (!product || product.quantity <= 0) {
-      alert('Product is out of stock!');
+      this.toastService.warning('Product is out of stock!');
       return;
     }
 
@@ -233,6 +235,9 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
     // Add product to cart
     this.cartService.addToCart(product, 1);
+    
+    // Show success toast
+    this.toastService.success(`${product.name} successfully added to cart!`);
     
     // Show success feedback if button found
     if (buttonElement) {

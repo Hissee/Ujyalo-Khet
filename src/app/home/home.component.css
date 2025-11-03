@@ -47,6 +47,50 @@
   width: 100%;
 }
 
+/* Overlay Navigation Buttons */
+.carousel-overlay-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(4, 188, 100, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-overlay-btn:hover:not(:disabled) {
+  background-color: rgba(4, 188, 100, 1);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-overlay-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.carousel-overlay-btn-prev {
+  left: 10px;
+}
+
+.carousel-overlay-btn-next {
+  right: 10px;
+}
+
+.carousel-overlay-btn i {
+  font-size: 1.2rem;
+}
+
 .product-carousel-track {
   display: flex;
   transition: transform 0.5s ease-in-out;
@@ -179,6 +223,19 @@
 .quantity-value {
   color: #1f2937;
   font-weight: 500;
+}
+
+.product-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.product-location i {
+  color: #04bc64;
 }
 
 .product-farmer {

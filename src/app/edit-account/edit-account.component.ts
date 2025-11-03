@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FarmerService } from '../services/farmer.service';
+import { ToastService } from '../services/toast.service';
 
 @Component({
   selector: 'app-edit-account',
@@ -33,7 +34,8 @@ export class EditAccountComponent implements OnInit {
 
   constructor(
     private farmerService: FarmerService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +73,7 @@ export class EditAccountComponent implements OnInit {
       error: (err) => {
         console.error('Error loading profile:', err);
         this.error = err.error?.message || 'Failed to load profile';
+        this.toastService.error(this.error || 'Failed to load profile');
         this.loadingProfile = false;
       }
     });
@@ -88,7 +91,7 @@ export class EditAccountComponent implements OnInit {
     this.farmerService.updateProfile(this.profileData).subscribe({
       next: (response) => {
         this.loading = false;
-        this.successMessage = 'Profile updated successfully!';
+        this.toastService.success('Profile updated successfully!', 1500);
         
         // Update localStorage with new user data
         if (this.user) {
@@ -107,14 +110,15 @@ export class EditAccountComponent implements OnInit {
           localStorage.setItem('user', JSON.stringify(this.user));
         }
 
-        // Clear success message after 3 seconds
+        // Redirect to landing page after toast duration
         setTimeout(() => {
-          this.successMessage = '';
-        }, 3000);
+          this.router.navigate(['/']);
+        }, 1500);
       },
       error: (err) => {
         console.error('Error updating profile:', err);
         this.error = err.error?.message || 'Failed to update profile';
+        this.toastService.error(this.error || 'Failed to update profile');
         this.loading = false;
       }
     });

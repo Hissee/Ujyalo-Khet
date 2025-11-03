@@ -18,7 +18,7 @@ export class ToastService {
 
   constructor() {}
 
-  show(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', duration: number = 5000): void {
+  show(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', duration: number = 1500): void {
     const toast: Toast = {
       id: this.generateId(),
       message,
@@ -37,19 +37,19 @@ export class ToastService {
     }
   }
 
-  success(message: string, duration: number = 5000): void {
+  success(message: string, duration: number = 1500): void {
     this.show(message, 'success', duration);
   }
 
-  error(message: string, duration: number = 5000): void {
+  error(message: string, duration: number = 1500): void {
     this.show(message, 'error', duration);
   }
 
-  warning(message: string, duration: number = 5000): void {
+  warning(message: string, duration: number = 1500): void {
     this.show(message, 'warning', duration);
   }
 
-  info(message: string, duration: number = 5000): void {
+  info(message: string, duration: number = 1500): void {
     this.show(message, 'info', duration);
   }
 

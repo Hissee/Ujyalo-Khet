@@ -126,6 +126,25 @@ export class HomeComponent implements OnInit {
     category.currentSlide = (category.currentSlide - 1 + totalSlides) % totalSlides;
   }
 
+  scrollCarousel(categoryName: string, direction: 'left' | 'right'): void {
+    // Find the container (parent of the track)
+    const trackElement = document.querySelector(`[data-category="${categoryName}"]`) as HTMLElement;
+    if (!trackElement) return;
+    
+    const containerElement = trackElement.parentElement as HTMLElement;
+    if (!containerElement || !containerElement.classList.contains('product-carousel-container')) return;
+    
+    const scrollAmount = containerElement.clientWidth * 0.8; // Scroll 80% of container width
+    const scrollPosition = direction === 'right' 
+      ? containerElement.scrollLeft + scrollAmount 
+      : containerElement.scrollLeft - scrollAmount;
+    
+    containerElement.scrollTo({
+      left: scrollPosition,
+      behavior: 'smooth'
+    });
+  }
+
   updateProductsPerSlide(): void {
     if (typeof window !== 'undefined') {
       if (window.innerWidth < 768) {

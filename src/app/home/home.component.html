@@ -33,30 +33,31 @@
         </div>
 
         <!-- Products Carousel -->
-        <div class="product-carousel-container" style="position: relative;">
+        <div class="product-carousel-wrapper">
           <!-- Overlay Navigation Buttons -->
           <button 
             class="btn carousel-overlay-btn carousel-overlay-btn-prev"
-            (click)="prevSlide(categoryGroup)"
-            [disabled]="getTotalSlides(categoryGroup) <= 1"
+            (click)="scrollCarousel(categoryGroup.category, 'left')"
             type="button">
             <i class="fas fa-chevron-left"></i>
           </button>
           <button 
             class="btn carousel-overlay-btn carousel-overlay-btn-next"
-            (click)="nextSlide(categoryGroup)"
-            [disabled]="getTotalSlides(categoryGroup) <= 1"
+            (click)="scrollCarousel(categoryGroup.category, 'right')"
             type="button">
             <i class="fas fa-chevron-right"></i>
           </button>
 
-          <div class="product-carousel-track" [style.transform]="'translateX(-' + (categoryGroup.currentSlide * 100) + '%)'">
-            @for (slideIndex of getSlideIndices(categoryGroup); track slideIndex) {
-              <div class="product-carousel-slide">
-                <div class="row g-4">
-                  @for (product of getProductsForSlide(categoryGroup, slideIndex); track product._id || product.id) {
-                    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
-                      <div class="product-card" (click)="viewProduct(product)">
+          <div class="product-carousel-container">
+            <div 
+              class="product-carousel-track" 
+              #carouselTrack
+              [attr.data-category]="categoryGroup.category">
+            <div class="product-carousel-slide">
+              <div class="row g-4">
+                @for (product of categoryGroup.products; track product._id || product.id) {
+                  <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                    <div class="product-card" (click)="viewProduct(product)">
                         <!-- Product Image -->
                         <div class="product-image-wrapper">
                           <img 
@@ -118,7 +119,7 @@
                   }
                 </div>
               </div>
-            }
+            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,46 @@
+.card {
+  border: none;
+  border-radius: 10px;
+}
+
+.card-body {
+  background-color: #fff;
+}
+
+.alert {
+  border-radius: 8px;
+}
+
+.btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.form-control {
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.invalid-feedback {
+  display: block;
+}
+
+text-muted {
+  font-size: 0.875rem;
+}
+

@@ -7,6 +7,8 @@ export class Endpoint {
   public static readonly SIGNUP_CUSTOMER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/signup/customer';
   public static readonly SIGNUP_FARMER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/signup/farmer';
   public static readonly LOGIN = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/login';
+  public static readonly VERIFY_EMAIL = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/verify-email';
+  public static readonly RESEND_VERIFICATION = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/resend-verification';
 
   // Products
   public static readonly ADD_PRODUCT = Endpoint.API_BASE + Endpoint.API_VERSION + 'products';

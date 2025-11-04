@@ -87,16 +87,26 @@ export class SignupFarmerComponent {
             localStorage.setItem('user', JSON.stringify(res.user));
           }
 
-          // Redirect after a short delay
-          setTimeout(() => {
-            if (res.token) {
-              // If token is provided, redirect to dashboard
-              this.router.navigate(['/farmer-dashboard']);
-            } else {
-              // Otherwise redirect to login page
-              this.router.navigate(['/login-farmer']);
-            }
-          }, 2000);
+          // If email verification is required, show message and redirect to verify page
+          if (res.requiresEmailVerification) {
+            this.successMessage = 'Signup successful! Please check your email to verify your account before logging in.';
+            setTimeout(() => {
+              this.router.navigate(['/verify-email'], { 
+                queryParams: { email: res.user?.email } 
+              });
+            }, 3000);
+          } else {
+            // Redirect after a short delay
+            setTimeout(() => {
+              if (res.token) {
+                // If token is provided, redirect to dashboard
+                this.router.navigate(['/farmer-dashboard']);
+              } else {
+                // Otherwise redirect to login page
+                this.router.navigate(['/login-farmer']);
+              }
+            }, 2000);
+          }
         },
         error: (err) => {
           this.loading = false;

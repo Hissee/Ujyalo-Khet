@@ -34,6 +34,14 @@ export class AuthService {
     return this.http.post(Endpoint.LOGIN, data);
   }
 
+  verifyEmail(token: string, email: string): Observable<any> {
+    return this.http.post(Endpoint.VERIFY_EMAIL, { token, email });
+  }
+
+  resendVerificationEmail(email: string): Observable<any> {
+    return this.http.post(Endpoint.RESEND_VERIFICATION, { email });
+  }
+
   createUpdateForm() {
     return new FormGroup(
       {

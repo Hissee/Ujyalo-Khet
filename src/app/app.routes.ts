@@ -20,6 +20,7 @@ import { UpdateProductComponent } from './product/update-product/update-product.
 import { AddProductComponent } from './product/add-product/add-product.component';
 import { NotificationComponent } from './notification/notification.component';
 import { FilterComponent } from './product/filter/filter.component';
+import { VerifyEmailComponent } from './verify-email/verify-email.component';
 
 
 export const routes: Routes = [
@@ -103,6 +104,10 @@ export const routes: Routes = [
   {
     path: 'filter',
     component: FilterComponent,
+  },
+  {
+    path: 'verify-email',
+    component: VerifyEmailComponent,
   },
   {
     path: '**',

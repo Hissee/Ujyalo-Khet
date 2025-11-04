@@ -58,6 +58,16 @@ export class LoginFarmerComponent {
       error: (err) => {
         this.loading = false;
         this.errorMessage = err.error?.message || 'Login failed. Please try again.';
+        
+        // If email verification is required, redirect to verification page
+        if (err.error?.requiresEmailVerification) {
+          setTimeout(() => {
+            this.router.navigate(['/verify-email'], { 
+              queryParams: { email: err.error?.email || this.loginForm.get('email')?.value } 
+            });
+          }, 2000);
+        }
+        
         console.error('Login error:', err);
       }
     });

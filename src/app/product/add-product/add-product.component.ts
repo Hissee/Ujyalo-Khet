@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FarmerService } from '../../services/farmer.service';
+import { ProductService } from '../product.service';
 import { ImageUploadService } from '../../services/image-upload.service';
 import { ToastService } from '../../services/toast.service';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { forkJoin, of, debounceTime, distinctUntilChanged } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-product',
@@ -14,7 +15,7 @@ import { catchError } from 'rxjs/operators';
   templateUrl: './add-product.component.html',
   styleUrl: './add-product.component.css'
 })
-export class AddProductComponent {
+export class AddProductComponent implements OnInit {
   productForm: FormGroup;
   submitting = false;
   error: string | null = null;
@@ -30,10 +31,16 @@ export class AddProductComponent {
   uploadProgress: { [key: number]: number } = {};
   filesToUpload: File[] = [];
 
+  // Price suggestion
+  priceSuggestion: any = null;
+  loadingSuggestion = false;
+  showSuggestion = false;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private farmerService: FarmerService,
+    private productService: ProductService,
     private imageUploadService: ImageUploadService,
     private toastService: ToastService
   ) {
@@ -46,6 +53,24 @@ export class AddProductComponent {
       harvestDate: [''],
       organic: [false],
       location: ['']
+    });
+  }
+
+  ngOnInit() {
+    // Watch for changes in category, quantity, or organic status to get price suggestions
+    this.productForm.get('category')?.valueChanges.subscribe(() => {
+      this.getPriceSuggestion();
+    });
+
+    this.productForm.get('quantity')?.valueChanges.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.getPriceSuggestion();
+    });
+
+    this.productForm.get('organic')?.valueChanges.subscribe(() => {
+      this.getPriceSuggestion();
     });
   }
 
@@ -186,5 +211,61 @@ export class AddProductComponent {
       if (field.errors['min']) return `${fieldName} must be greater than ${field.errors['min'].min}`;
     }
     return '';
+  }
+
+  getPriceSuggestion() {
+    const category = this.productForm.get('category')?.value;
+    const quantity = this.productForm.get('quantity')?.value;
+    const organic = this.productForm.get('organic')?.value || false;
+    const location = this.productForm.get('location')?.value;
+
+    if (!category || !quantity || quantity <= 0) {
+      this.priceSuggestion = null;
+      this.showSuggestion = false;
+      return;
+    }
+
+    this.loadingSuggestion = true;
+    this.showSuggestion = true;
+
+    this.productService.getPriceSuggestion(category, quantity, organic, location).subscribe({
+      next: (suggestion) => {
+        this.priceSuggestion = suggestion;
+        this.loadingSuggestion = false;
+      },
+      error: (err) => {
+        console.error('Error getting price suggestion:', err);
+        this.loadingSuggestion = false;
+        // Don't show error, just hide suggestion
+        this.priceSuggestion = null;
+      }
+    });
+  }
+
+  useSuggestedPrice() {
+    if (this.priceSuggestion?.suggestedPrice) {
+      this.productForm.patchValue({
+        price: this.priceSuggestion.suggestedPrice
+      });
+      this.toastService.success('Price updated to suggested value');
+    }
+  }
+
+  useMinPrice() {
+    if (this.priceSuggestion?.minPrice) {
+      this.productForm.patchValue({
+        price: this.priceSuggestion.minPrice
+      });
+      this.toastService.success('Price updated to minimum suggested value');
+    }
+  }
+
+  useMaxPrice() {
+    if (this.priceSuggestion?.maxPrice) {
+      this.productForm.patchValue({
+        price: this.priceSuggestion.maxPrice
+      });
+      this.toastService.success('Price updated to maximum suggested value');
+    }
   }
 }

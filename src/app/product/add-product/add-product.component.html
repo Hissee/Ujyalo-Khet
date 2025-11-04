@@ -70,6 +70,68 @@
                 @if (isFieldInvalid('price')) {
                   <div class="invalid-feedback">{{ getFieldError('price') }}</div>
                 }
+                
+                <!-- Price Suggestion Card -->
+                @if (showSuggestion && (loadingSuggestion || priceSuggestion)) {
+                  <div class="card mt-2 border-info" style="font-size: 0.875rem;">
+                    <div class="card-body p-2">
+                      @if (loadingSuggestion) {
+                        <div class="text-center">
+                          <span class="spinner-border spinner-border-sm me-2"></span>
+                          <small class="text-muted">Analyzing market prices...</small>
+                        </div>
+                      } @else if (priceSuggestion?.success) {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <strong class="text-info">
+                            <i class="bi bi-lightbulb"></i> AI Price Suggestion
+                          </strong>
+                          <span class="badge" [ngClass]="{
+                            'bg-success': priceSuggestion.confidence === 'high',
+                            'bg-warning': priceSuggestion.confidence === 'medium',
+                            'bg-secondary': priceSuggestion.confidence === 'low'
+                          }">
+                            {{ priceSuggestion.confidence }} confidence
+                          </span>
+                        </div>
+                        <div class="mb-2">
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Suggested:</span>
+                            <strong class="text-success">Rs {{ priceSuggestion.suggestedPrice }}</strong>
+                            <button 
+                              type="button" 
+                              class="btn btn-sm btn-outline-success"
+                              (click)="useSuggestedPrice()">
+                              <i class="bi bi-check"></i> Use
+                            </button>
+                          </div>
+                          <div class="d-flex justify-content-between align-items-center mt-1">
+                            <span class="text-muted">Range:</span>
+                            <span class="text-muted">Rs {{ priceSuggestion.minPrice }} - Rs {{ priceSuggestion.maxPrice }}</span>
+                            <div class="btn-group btn-group-sm">
+                              <button 
+                                type="button" 
+                                class="btn btn-outline-secondary"
+                                (click)="useMinPrice()"
+                                title="Use minimum price">
+                                Min
+                              </button>
+                              <button 
+                                type="button" 
+                                class="btn btn-outline-secondary"
+                                (click)="useMaxPrice()"
+                                title="Use maximum price">
+                                Max
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <small class="text-muted">
+                          <i class="bi bi-info-circle"></i> Based on {{ priceSuggestion.basedOn }}
+                        </small>
+                      }
+                    </div>
+                  </div>
+                }
               </div>
               <div class="col-md-6 mb-3">
                 <label for="quantity" class="form-label">Quantity (kg) <span class="text-danger">*</span></label>

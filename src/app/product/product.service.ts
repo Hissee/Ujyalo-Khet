@@ -74,4 +74,19 @@ export class ProductService {
       organic: product.organic !== undefined ? product.organic : false // Use organic if available
     };
   }
+
+  // Get price suggestion for a product
+  getPriceSuggestion(category: string, quantity: number, organic: boolean = false, location?: string): Observable<any> {
+    return this.http.post(Endpoint.SUGGEST_PRICE, {
+      category,
+      quantity,
+      organic,
+      location
+    });
+  }
+
+  // Get category market statistics
+  getCategoryStats(category: string): Observable<any> {
+    return this.http.get(Endpoint.CATEGORY_STATS(category));
+  }
 }

@@ -19,6 +19,9 @@ export class Endpoint {
     Endpoint.API_BASE + Endpoint.API_VERSION + `products/${id}`;
   public static readonly DELETE_PRODUCT = (id: string) =>
     Endpoint.API_BASE + Endpoint.API_VERSION + `products/${id}`;
+  public static readonly SUGGEST_PRICE = Endpoint.API_BASE + Endpoint.API_VERSION + 'products/suggest-price';
+  public static readonly CATEGORY_STATS = (category: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `products/category-stats/${category}`;
 
   // Orders
   public static readonly PLACE_ORDER = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders';

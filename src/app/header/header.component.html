@@ -10,7 +10,7 @@
     <!-- Home - Only visible if not logged in as farmer -->
     @if (!isLoggedIn || (isLoggedIn && user?.role !== 'farmer')) {
     <a routerLink="./" class="nav-link-item">
-      <i class="fas fa-home"></i> Home
+      <i class="fas fa-home"></i> <span class="nav-text">Home</span>
     </a>
     }
 
@@ -29,7 +29,7 @@
       <!-- Cart - Only for consumers -->
       @if (user?.role === 'consumer' || user?.role === 'customer') {
         <a routerLink="./cart" class="nav-link-item cart-link">
-          <i class="fas fa-shopping-cart"></i> Cart
+          <i class="fas fa-shopping-cart"></i> <span class="nav-text">Cart</span>
           @if (cartItemCount > 0) {
             <span class="cart-badge">{{ cartItemCount }}</span>
           }
@@ -38,7 +38,7 @@
 
       <!-- Notifications -->
       <a routerLink="./notifications" class="nav-link-item notification-btn">
-        <i class="fas fa-bell"></i> Notifications
+        <i class="fas fa-bell"></i> <span class="nav-text">Notifications</span>
         @if (notificationCount > 0) {
           <span class="notification-badge">{{ notificationCount }}</span>
         }
@@ -51,7 +51,7 @@
           type="button" 
           (click)="toggleUserMenu()"
           [class.active]="showUserMenu">
-          <i class="fas fa-bars"></i> Menu
+          <i class="fas fa-bars"></i> <span class="nav-text">Menu</span>
         </button>
 
         <!-- User Dropdown Menu -->

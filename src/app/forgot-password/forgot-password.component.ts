@@ -39,9 +39,19 @@ export class ForgotPasswordComponent {
     this.authService.forgotPassword(email).subscribe({
       next: (res: any) => {
         this.loading = false;
-        this.successMessage = res.message || 'Password reset link has been sent to your email.';
-        // Clear form
-        this.forgotPasswordForm.reset();
+        this.successMessage = res.message || 'Password reset OTP has been sent to your email.';
+        
+        // If OTP verification is required, redirect to OTP verification page
+        if (res.requiresOTPVerification && res.email) {
+          setTimeout(() => {
+            this.router.navigate(['/verify-password-reset-otp'], { 
+              queryParams: { email: res.email } 
+            });
+          }, 1500);
+        } else {
+          // Clear form if not redirecting
+          this.forgotPasswordForm.reset();
+        }
       },
       error: (err) => {
         this.loading = false;

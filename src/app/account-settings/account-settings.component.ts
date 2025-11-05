@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FarmerService } from '../services/farmer.service';
 import { ToastService } from '../services/toast.service';
@@ -10,7 +10,7 @@ import { Endpoint } from '../const/end-point';
 
 @Component({
   selector: 'app-account-settings',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './account-settings.component.html',
   styleUrl: './account-settings.component.css'
 })
@@ -33,6 +33,12 @@ export class AccountSettingsComponent implements OnInit {
     street: ''
   };
 
+  // Change Password
+  passwordChangeForm!: FormGroup;
+  otpRequested = false;
+  requestingOTP = false;
+  changingPassword = false;
+
   // Delete/Deactivate Account
   deletePassword = '';
   deactivatePassword = '';
@@ -48,8 +54,28 @@ export class AccountSettingsComponent implements OnInit {
     private router: Router,
     private toastService: ToastService,
     private confirmationDialog: ConfirmationDialogService,
-    private http: HttpClient
-  ) {}
+    private http: HttpClient,
+    private fb: FormBuilder
+  ) {
+    // Initialize password change form
+    this.passwordChangeForm = this.fb.group({
+      otp: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required]
+    }, { validators: this.passwordMatchValidator });
+  }
+
+  passwordMatchValidator = (control: any) => {
+    const formGroup = control as FormGroup;
+    const newPassword = formGroup.get('newPassword');
+    const confirmPassword = formGroup.get('confirmPassword');
+    
+    if (!newPassword || !confirmPassword) {
+      return null;
+    }
+    
+    return newPassword.value === confirmPassword.value ? null : { mismatch: true };
+  };
 
   ngOnInit(): void {
     // Check if user is logged in
@@ -98,6 +124,8 @@ export class AccountSettingsComponent implements OnInit {
     this.successMessage = '';
     this.deletePassword = '';
     this.deactivatePassword = '';
+    this.otpRequested = false;
+    this.passwordChangeForm.reset();
   }
 
   // Edit Account Functions
@@ -176,6 +204,99 @@ export class AccountSettingsComponent implements OnInit {
       return false;
     }
     return true;
+  }
+
+  // Change Password Functions
+  requestPasswordChangeOTP(): void {
+    // Clear form data before requesting OTP
+    this.passwordChangeForm.reset();
+    
+    this.requestingOTP = true;
+    this.error = null;
+    this.successMessage = '';
+
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    this.http.post(Endpoint.REQUEST_PASSWORD_CHANGE_OTP, {}, { headers }).subscribe({
+      next: (response: any) => {
+        this.requestingOTP = false;
+        this.otpRequested = true;
+        this.toastService.success(response.message || 'OTP has been sent to your email. Please check your inbox.');
+        this.successMessage = response.message || 'OTP has been sent to your email. Please check your inbox.';
+        
+        // Ensure form is reset after OTP is sent
+        setTimeout(() => {
+          this.passwordChangeForm.reset();
+        }, 100);
+      },
+      error: (err) => {
+        console.error('Error requesting password change OTP:', err);
+        this.error = err.error?.message || 'Failed to send OTP. Please try again.';
+        this.toastService.error(this.error || 'Failed to send OTP. Please try again.');
+        this.requestingOTP = false;
+      }
+    });
+  }
+
+  changePasswordWithOTP(): void {
+    if (this.passwordChangeForm.invalid) {
+      this.passwordChangeForm.markAllAsTouched();
+      this.error = 'Please fill all fields correctly';
+      return;
+    }
+
+    const formValue = this.passwordChangeForm.value;
+
+    if (formValue.newPassword.length < 6) {
+      this.error = 'New password must be at least 6 characters';
+      return;
+    }
+
+    if (formValue.newPassword !== formValue.confirmPassword) {
+      this.error = 'New password and confirm password do not match';
+      return;
+    }
+
+    this.changingPassword = true;
+    this.error = null;
+    this.successMessage = '';
+
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+
+    this.http.post(Endpoint.CHANGE_PASSWORD_WITH_OTP, {
+      otp: formValue.otp,
+      newPassword: formValue.newPassword
+    }, { headers }).subscribe({
+      next: (response: any) => {
+        this.changingPassword = false;
+        this.toastService.success(response.message || 'Password changed successfully');
+        this.successMessage = response.message || 'Password changed successfully';
+        
+        // Reset form
+        this.otpRequested = false;
+        this.passwordChangeForm.reset();
+
+        // Clear messages after 3 seconds
+        setTimeout(() => {
+          this.error = null;
+          this.successMessage = '';
+        }, 3000);
+      },
+      error: (err) => {
+        console.error('Error changing password:', err);
+        this.error = err.error?.message || 'Failed to change password. Please check your OTP and try again.';
+        this.toastService.error(this.error || 'Failed to change password. Please check your OTP and try again.');
+        this.changingPassword = false;
+      }
+    });
   }
 
   // Delete Account Functions

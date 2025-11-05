@@ -42,6 +42,8 @@ export class Endpoint {
     Endpoint.API_BASE + Endpoint.API_VERSION + `farmer/orders/${orderId}/status`;
   public static readonly GET_CURRENT_USER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/me';
   public static readonly UPDATE_PROFILE = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/profile';
+  public static readonly REQUEST_PASSWORD_CHANGE_OTP = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/password/request-otp';
+  public static readonly CHANGE_PASSWORD_WITH_OTP = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/password/change-with-otp';
   public static readonly DEACTIVATE_ACCOUNT = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/deactivate';
   public static readonly DELETE_ACCOUNT = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/delete-account';
 

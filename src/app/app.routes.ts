@@ -24,6 +24,7 @@ import { FilterComponent } from './product/filter/filter.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { VerifyPasswordResetOtpComponent } from './verify-password-reset-otp/verify-password-reset-otp.component';
 
 
 export const routes: Routes = [
@@ -119,6 +120,10 @@ export const routes: Routes = [
   {
     path: 'forgot-password',
     component: ForgotPasswordComponent,
+  },
+  {
+    path: 'verify-password-reset-otp',
+    component: VerifyPasswordResetOtpComponent,
   },
   {
     path: 'reset-password',

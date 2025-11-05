@@ -132,8 +132,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   navigateToEditAccount(): void {
-    // Both farmers and consumers use the same edit-account route
-    this.router.navigate(['/edit-account']);
+    // Both farmers and consumers use the same account-settings route
+    this.router.navigate(['/account-settings']);
     this.showUserMenu = false;
   }
 

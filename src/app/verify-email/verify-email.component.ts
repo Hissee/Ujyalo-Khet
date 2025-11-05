@@ -72,10 +72,25 @@ export class VerifyEmailComponent implements OnInit {
         this.verified = true;
         this.successMessage = res.message || 'Email verified successfully!';
         
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
-          this.router.navigate(['/login']);
-        }, 2000);
+        // If token and user are provided (signup verification), auto-login
+        if (res.token && res.user) {
+          localStorage.setItem('token', res.token);
+          localStorage.setItem('user', JSON.stringify(res.user));
+          
+          // Redirect based on user role
+          setTimeout(() => {
+            if (res.user.role === 'farmer') {
+              this.router.navigate(['/farmer-dashboard']);
+            } else {
+              this.router.navigate(['/']);
+            }
+          }, 2000);
+        } else {
+          // Regular email verification (existing user), redirect to login
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        }
       },
       error: (err) => {
         this.verifying = false;

@@ -194,24 +194,38 @@
               </div>
 
               <!-- Submit Buttons -->
-              <div class="d-flex gap-2">
-                <button
-                  type="submit"
-                  class="btn btn-success"
-                  [disabled]="submitting || productForm.invalid">
-                  @if (submitting) {
-                    <span class="spinner-border spinner-border-sm me-2"></span>
-                    Updating...
-                  } @else {
-                    <i class="bi bi-save"></i> Update Product
-                  }
-                </button>
+              <div class="d-flex gap-2 justify-content-between">
+                <div class="d-flex gap-2">
+                  <button
+                    type="submit"
+                    class="btn btn-success"
+                    [disabled]="submitting || productForm.invalid || deleting">
+                    @if (submitting) {
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                      Updating...
+                    } @else {
+                      <i class="bi bi-save"></i> Update Product
+                    }
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    (click)="cancel()"
+                    [disabled]="submitting || deleting">
+                    Cancel
+                  </button>
+                </div>
                 <button
                   type="button"
-                  class="btn btn-secondary"
-                  (click)="cancel()"
-                  [disabled]="submitting">
-                  Cancel
+                  class="btn btn-danger"
+                  (click)="deleteProduct()"
+                  [disabled]="submitting || deleting">
+                  @if (deleting) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Deleting...
+                  } @else {
+                    <i class="bi bi-trash"></i> Delete Product
+                  }
                 </button>
               </div>
             </form>

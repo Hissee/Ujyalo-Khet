@@ -14,6 +14,7 @@ import { CartComponent } from './cart/cart/cart.component';
 import { CheckoutComponent } from './checkout/checkout.component';
 import { FarmerDashboardComponent } from './farmer/farmer-dashboard/farmer-dashboard.component';
 import { EditAccountComponent } from './edit-account/edit-account.component';
+import { AccountSettingsComponent } from './account-settings/account-settings.component';
 import { OrderListComponent } from './order/order-list/order-list.component';
 import { OrderDetailComponent } from './order/order-detail/order-detail.component';
 import { UpdateProductComponent } from './product/update-product/update-product.component';
@@ -21,6 +22,8 @@ import { AddProductComponent } from './product/add-product/add-product.component
 import { NotificationComponent } from './notification/notification.component';
 import { FilterComponent } from './product/filter/filter.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 
 
 export const routes: Routes = [
@@ -86,8 +89,12 @@ export const routes: Routes = [
     component: UpdateProductComponent,
   },
   {
+    path: 'account-settings',
+    component: AccountSettingsComponent,
+  },
+  {
     path: 'edit-account',
-    component: EditAccountComponent,
+    component: AccountSettingsComponent, // Redirect old route to account-settings
   },
   {
     path: 'orders',
@@ -108,6 +115,14 @@ export const routes: Routes = [
   {
     path: 'verify-email',
     component: VerifyEmailComponent,
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPasswordComponent,
+  },
+  {
+    path: 'reset-password',
+    component: ResetPasswordComponent,
   },
   {
     path: '**',

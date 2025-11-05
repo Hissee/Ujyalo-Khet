@@ -9,6 +9,11 @@ export class Endpoint {
   public static readonly LOGIN = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/login';
   public static readonly VERIFY_EMAIL = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/verify-email';
   public static readonly RESEND_VERIFICATION = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/resend-verification';
+  public static readonly FORGOT_PASSWORD = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/forgot-password';
+  public static readonly RESET_PASSWORD = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/reset-password';
+  public static readonly RESEND_PASSWORD_RESET_OTP = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/resend-password-reset-otp';
+  public static readonly VERIFY_OTP = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/verify-otp';
+  public static readonly RESEND_OTP = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/resend-otp';
 
   // Products
   public static readonly ADD_PRODUCT = Endpoint.API_BASE + Endpoint.API_VERSION + 'products';
@@ -37,6 +42,8 @@ export class Endpoint {
     Endpoint.API_BASE + Endpoint.API_VERSION + `farmer/orders/${orderId}/status`;
   public static readonly GET_CURRENT_USER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/me';
   public static readonly UPDATE_PROFILE = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/profile';
+  public static readonly DEACTIVATE_ACCOUNT = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/deactivate';
+  public static readonly DELETE_ACCOUNT = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/delete-account';
 
   // Notifications
   public static readonly GET_NOTIFICATIONS = Endpoint.API_BASE + Endpoint.API_VERSION + 'notifications';

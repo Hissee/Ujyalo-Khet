@@ -6,6 +6,7 @@ import { FarmerService } from '../../services/farmer.service';
 import { ProductService } from '../product.service';
 import { ImageUploadService } from '../../services/image-upload.service';
 import { ToastService } from '../../services/toast.service';
+import { ConfirmationDialogService } from '../../services/confirmation-dialog.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -18,8 +19,10 @@ import { catchError } from 'rxjs/operators';
 export class UpdateProductComponent implements OnInit {
   productForm: FormGroup;
   productId: string | null = null;
+  productName: string = '';
   loading = false;
   submitting = false;
+  deleting = false;
   error: string | null = null;
   successMessage: string = '';
   
@@ -38,7 +41,8 @@ export class UpdateProductComponent implements OnInit {
     private farmerService: FarmerService,
     private productService: ProductService,
     private imageUploadService: ImageUploadService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private confirmationDialog: ConfirmationDialogService
   ) {
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -69,6 +73,7 @@ export class UpdateProductComponent implements OnInit {
     
     this.productService.getProductById(this.productId).subscribe({
       next: (product) => {
+        this.productName = product.name;
         this.productForm.patchValue({
           name: product.name,
           description: product.description || '',
@@ -241,5 +246,42 @@ export class UpdateProductComponent implements OnInit {
       if (field.errors['min']) return `${fieldName} must be greater than ${field.errors['min'].min}`;
     }
     return '';
+  }
+
+  async deleteProduct(): Promise<void> {
+    if (!this.productId || !this.productName) {
+      this.toastService.error('Product information is missing');
+      return;
+    }
+
+    const confirmed = await this.confirmationDialog.show(
+      'Delete Product',
+      `Are you sure you want to delete "${this.productName}"? This action cannot be undone.`,
+      'Delete',
+      'Cancel'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.deleting = true;
+    this.error = null;
+
+    this.farmerService.deleteProduct(this.productId).subscribe({
+      next: (response) => {
+        this.toastService.success(response.message || 'Product deleted successfully!');
+        this.deleting = false;
+        
+        setTimeout(() => {
+          this.router.navigate(['/farmer-dashboard'], { queryParams: { tab: 'products' } });
+        }, 1500);
+      },
+      error: (err) => {
+        console.error('Error deleting product:', err);
+        this.toastService.error(err.error?.message || 'Failed to delete product. Make sure there are no active orders for this product.');
+        this.deleting = false;
+      }
+    });
   }
 }

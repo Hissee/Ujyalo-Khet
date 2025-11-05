@@ -1,0 +1,349 @@
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      <div class="card shadow">
+        <div class="card-header bg-success text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h3 class="mb-0"><i class="bi bi-gear"></i> Account Settings</h3>
+            <button type="button" class="btn btn-light btn-sm" (click)="cancel()">
+              <i class="bi bi-x-lg"></i> Close
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          @if (loadingProfile) {
+            <div class="text-center py-5">
+              <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2">Loading account information...</p>
+            </div>
+          } @else if (error && !user) {
+            <div class="alert alert-danger" role="alert">
+              <i class="bi bi-exclamation-triangle"></i> {{ error }}
+            </div>
+          } @else if (user) {
+            <!-- Account Info Summary -->
+            <div class="mb-4 p-3 bg-light rounded">
+              <h5 class="mb-2">Account Information</h5>
+              <div class="row">
+                <div class="col-md-6 mb-2">
+                  <strong>Name:</strong> {{ getFullName() }}
+                </div>
+                <div class="col-md-6 mb-2">
+                  <strong>Email:</strong> {{ user.email }}
+                  <small class="text-muted d-block">(Email cannot be changed)</small>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <strong>Role:</strong> 
+                  <span class="badge bg-success">{{ user.role }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <ul class="nav nav-tabs mb-4" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button 
+                  class="nav-link" 
+                  [class.active]="activeTab === 'edit'"
+                  (click)="switchTab('edit')">
+                  <i class="bi bi-pencil-square"></i> Edit Account
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button 
+                  class="nav-link" 
+                  [class.active]="activeTab === 'deactivate'"
+                  (click)="switchTab('deactivate')">
+                  <i class="bi bi-pause-circle"></i> Deactivate Account
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button 
+                  class="nav-link text-danger" 
+                  [class.active]="activeTab === 'delete'"
+                  (click)="switchTab('delete')">
+                  <i class="bi bi-trash"></i> Delete Account
+                </button>
+              </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+              <!-- Edit Account Tab -->
+              @if (activeTab === 'edit') {
+                <div class="tab-pane fade show active">
+                  <!-- Success Message -->
+                  @if (successMessage) {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      <i class="bi bi-check-circle"></i> {{ successMessage }}
+                      <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+                    </div>
+                  }
+
+                  <!-- Error Message -->
+                  @if (error) {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                      <button type="button" class="btn-close" (click)="error = null"></button>
+                    </div>
+                  }
+
+                  <!-- Edit Form -->
+                  <form (ngSubmit)="saveProfile()">
+                    <h5 class="mb-3">Update Your Details</h5>
+
+                    <!-- Name Fields -->
+                    <div class="row mb-3">
+                      <div class="col-md-4">
+                        <label for="firstName" class="form-label">
+                          First Name <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="firstName"
+                          [(ngModel)]="profileData.firstName"
+                          name="firstName"
+                          required
+                          [disabled]="loading">
+                      </div>
+                      <div class="col-md-4">
+                        <label for="middleName" class="form-label">Middle Name</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="middleName"
+                          [(ngModel)]="profileData.middleName"
+                          name="middleName"
+                          [disabled]="loading">
+                      </div>
+                      <div class="col-md-4">
+                        <label for="lastName" class="form-label">
+                          Last Name <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="lastName"
+                          [(ngModel)]="profileData.lastName"
+                          name="lastName"
+                          required
+                          [disabled]="loading">
+                      </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="mb-3">
+                      <label for="phone" class="form-label">
+                        Phone Number <span class="text-danger">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        class="form-control"
+                        id="phone"
+                        [(ngModel)]="profileData.phone"
+                        name="phone"
+                        placeholder="10-digit phone number"
+                        pattern="[0-9]{10}"
+                        maxlength="10"
+                        required
+                        [disabled]="loading">
+                      <small class="text-muted">Enter 10-digit phone number</small>
+                    </div>
+
+                    <!-- Address Fields -->
+                    <h6 class="mb-3 mt-4">Address Information</h6>
+
+                    <div class="mb-3">
+                      <label for="province" class="form-label">
+                        Province <span class="text-danger">*</span>
+                      </label>
+                      <select
+                        class="form-select"
+                        id="province"
+                        [(ngModel)]="profileData.province"
+                        name="province"
+                        required
+                        [disabled]="loading">
+                        <option value="">Select Province</option>
+                        @for (province of provinces; track province) {
+                          <option [value]="province">{{ province }}</option>
+                        }
+                      </select>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="city" class="form-label">
+                          City <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="city"
+                          [(ngModel)]="profileData.city"
+                          name="city"
+                          required
+                          [disabled]="loading">
+                      </div>
+                      <div class="col-md-6">
+                        <label for="street" class="form-label">
+                          Street Address <span class="text-danger">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="street"
+                          [(ngModel)]="profileData.street"
+                          name="street"
+                          required
+                          [disabled]="loading">
+                      </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between mt-4">
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        (click)="cancel()"
+                        [disabled]="loading">
+                        <i class="bi bi-x-circle"></i> Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        class="btn btn-success"
+                        [disabled]="loading">
+                        @if (loading) {
+                          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                          Saving...
+                        } @else {
+                          <i class="bi bi-check-circle"></i> Save Changes
+                        }
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              }
+
+              <!-- Deactivate Account Tab -->
+              @if (activeTab === 'deactivate') {
+                <div class="tab-pane fade show active">
+                  <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Warning:</strong> Deactivating your account will temporarily disable it. You can reactivate it by logging in again.
+                  </div>
+
+                  @if (error) {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                      <button type="button" class="btn-close" (click)="error = null"></button>
+                    </div>
+                  }
+
+                  @if (successMessage) {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      <i class="bi bi-check-circle"></i> {{ successMessage }}
+                      <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+                    </div>
+                  }
+
+                  <form (ngSubmit)="deactivateAccount()">
+                    <div class="mb-3">
+                      <label for="deactivatePassword" class="form-label">
+                        Enter your password to deactivate account <span class="text-danger">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="deactivatePassword"
+                        [(ngModel)]="deactivatePassword"
+                        name="deactivatePassword"
+                        placeholder="Enter your password"
+                        required
+                        [disabled]="deactivating">
+                      <small class="text-muted">We need to verify your identity before deactivating your account.</small>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                      <button
+                        type="submit"
+                        class="btn btn-warning"
+                        [disabled]="!deactivatePassword || deactivating">
+                        @if (deactivating) {
+                          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                          Deactivating...
+                        } @else {
+                          <i class="bi bi-pause-circle"></i> Deactivate Account
+                        }
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              }
+
+              <!-- Delete Account Tab -->
+              @if (activeTab === 'delete') {
+                <div class="tab-pane fade show active">
+                  <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Danger Zone:</strong> Deleting your account is permanent and cannot be undone. All your data, products, and orders will be permanently removed.
+                  </div>
+
+                  @if (error) {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                      <button type="button" class="btn-close" (click)="error = null"></button>
+                    </div>
+                  }
+
+                  @if (successMessage) {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      <i class="bi bi-check-circle"></i> {{ successMessage }}
+                      <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+                    </div>
+                  }
+
+                  <form (ngSubmit)="deleteAccount()">
+                    <div class="mb-3">
+                      <label for="deletePassword" class="form-label">
+                        Enter your password to delete account <span class="text-danger">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="deletePassword"
+                        [(ngModel)]="deletePassword"
+                        name="deletePassword"
+                        placeholder="Enter your password"
+                        required
+                        [disabled]="deleting">
+                      <small class="text-muted">We need to verify your identity before permanently deleting your account.</small>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                      <button
+                        type="submit"
+                        class="btn btn-danger"
+                        [disabled]="!deletePassword || deleting">
+                        @if (deleting) {
+                          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                          Deleting...
+                        } @else {
+                          <i class="bi bi-trash"></i> Delete Account Permanently
+                        }
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

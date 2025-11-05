@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-// import { RouterLink } from "../../../node_modules/@angular/router/router_module.d-Bx9ArA6K";
+import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-signup',
-  imports: [],
+  imports: [CommonModule, RouterLink],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css'
 })

@@ -42,6 +42,26 @@ export class AuthService {
     return this.http.post(Endpoint.RESEND_VERIFICATION, { email });
   }
 
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(Endpoint.FORGOT_PASSWORD, { email });
+  }
+
+  resetPassword(email: string, otp: string, newPassword: string): Observable<any> {
+    return this.http.post(Endpoint.RESET_PASSWORD, { email, otp, newPassword });
+  }
+
+  resendPasswordResetOTP(email: string): Observable<any> {
+    return this.http.post(Endpoint.RESEND_PASSWORD_RESET_OTP, { email });
+  }
+
+  verifyOTP(email: string, otp: string): Observable<any> {
+    return this.http.post(Endpoint.VERIFY_OTP, { email, otp });
+  }
+
+  resendOTP(email: string): Observable<any> {
+    return this.http.post(Endpoint.RESEND_OTP, { email });
+  }
+
   createUpdateForm() {
     return new FormGroup(
       {

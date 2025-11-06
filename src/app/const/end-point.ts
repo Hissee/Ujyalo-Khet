@@ -31,7 +31,6 @@ export class Endpoint {
   // Orders
   public static readonly PLACE_ORDER = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders';
   public static readonly GET_USER_ORDERS = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders/my';
-  public static readonly VERIFY_KHALTI_PAYMENT = Endpoint.API_BASE + Endpoint.API_VERSION + 'orders/verify-khalti';
 
   // Farmer
   public static readonly FARMER_PRODUCTS = Endpoint.API_BASE + Endpoint.API_VERSION + 'farmer/products';
@@ -55,4 +54,10 @@ export class Endpoint {
   public static readonly MARK_ALL_NOTIFICATIONS_READ = Endpoint.API_BASE + Endpoint.API_VERSION + 'notifications/read-all';
   public static readonly DELETE_NOTIFICATION = (id: string) =>
     Endpoint.API_BASE + Endpoint.API_VERSION + `notifications/${id}`;
+
+  // Upload
+  public static readonly UPLOAD_SINGLE_IMAGE = Endpoint.API_BASE + Endpoint.API_VERSION + 'upload/single';
+  public static readonly UPLOAD_MULTIPLE_IMAGES = Endpoint.API_BASE + Endpoint.API_VERSION + 'upload/multiple';
+  public static readonly DELETE_IMAGE = (publicId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `upload/${publicId}`;
 }

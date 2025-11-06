@@ -201,9 +201,9 @@
             <div class="mb-3">
               <label class="form-label">Product Images</label>
               
-              <!-- File Upload (uploads to Imgur) -->
+              <!-- File Upload (uploads to Cloudinary) -->
               <div class="mb-2">
-                <label class="form-label small text-muted">Upload images (will be hosted on Imgur)</label>
+                <label class="form-label small text-muted">Upload images (will be hosted on Cloudinary)</label>
                 <input
                   type="file"
                   class="form-control"
@@ -214,7 +214,7 @@
                 @if (uploadingImages) {
                   <small class="text-muted">
                     <span class="spinner-border spinner-border-sm me-1"></span>
-                    Uploading images to Imgur...
+                    Uploading images to Cloudinary...
                   </small>
                 }
               </div>

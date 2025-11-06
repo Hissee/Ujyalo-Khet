@@ -107,7 +107,7 @@
           <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Method</h5>
         </div>
         <div class="card-body">
-          <div class="form-check mb-3">
+          <div class="form-check">
             <input
               class="form-check-input"
               type="radio"
@@ -115,25 +115,11 @@
               id="cashOnDelivery"
               value="cash_on_delivery"
               [(ngModel)]="paymentMethod"
+              checked
             />
             <label class="form-check-label" for="cashOnDelivery">
               <strong>Cash on Delivery</strong>
               <p class="text-muted mb-0 small">Pay when you receive your order</p>
-            </label>
-          </div>
-
-          <div class="form-check">
-            <input
-              class="form-check-input"
-              type="radio"
-              name="paymentMethod"
-              id="khalti"
-              value="khalti"
-              [(ngModel)]="paymentMethod"
-            />
-            <label class="form-check-label" for="khalti">
-              <strong>Khalti</strong>
-              <p class="text-muted mb-0 small">Pay securely with Khalti</p>
             </label>
           </div>
         </div>
@@ -183,12 +169,7 @@
               <span class="spinner-border spinner-border-sm me-2" role="status"></span>
               Processing Order...
             } @else {
-              <i class="bi bi-check-circle"></i> 
-              @if (paymentMethod === 'cash_on_delivery') {
-                Place Order
-              } @else {
-                Pay with Khalti
-              }
+              <i class="bi bi-check-circle"></i> Place Order
             }
           </button>
           

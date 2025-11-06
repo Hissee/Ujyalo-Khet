@@ -119,32 +119,48 @@ export class UpdateProductComponent implements OnInit {
       this.uploadingImages = true;
       this.error = null;
 
-      // Upload files to Imgur
-      const uploadPromises = files.map((file, index) => {
-        return this.imageUploadService.uploadToImgur(file).pipe(
-          catchError(err => {
-            console.error(`Error uploading ${file.name}:`, err);
-            this.toastService.error(`Failed to upload ${file.name}. Please try a direct URL instead.`);
-            return of(null);
-          })
-        );
-      });
-
-      forkJoin(uploadPromises).subscribe({
+      // Upload files to Cloudinary
+      this.imageUploadService.uploadMultipleToCloudinary(files).subscribe({
         next: (urls) => {
-          const successfulUrls = urls.filter(url => url !== null) as string[];
-          this.imageUrls.push(...successfulUrls);
-          this.uploadingImages = false;
-          if (successfulUrls.length < files.length) {
-            this.toastService.warning(`Successfully uploaded ${successfulUrls.length} of ${files.length} images. Some failed.`);
+          if (urls && urls.length > 0) {
+            this.imageUrls.push(...urls);
+            this.uploadingImages = false;
+            this.toastService.success(`Successfully uploaded ${urls.length} image(s) to Cloudinary.`);
           } else {
-            this.toastService.success(`Successfully uploaded ${successfulUrls.length} image(s).`);
+            this.uploadingImages = false;
+            this.toastService.warning('No images were uploaded successfully.');
           }
         },
         error: (err) => {
-          console.error('Error uploading images:', err);
-          this.toastService.error('Failed to upload images. Please try using direct URLs instead.');
-          this.uploadingImages = false;
+          console.error('Error uploading images to Cloudinary:', err);
+          // Fallback: try uploading individually with fallback to Imgur
+          const uploadPromises = files.map((file) => {
+            return this.imageUploadService.uploadImage(file).pipe(
+              catchError(err => {
+                console.error(`Error uploading ${file.name}:`, err);
+                this.toastService.error(`Failed to upload ${file.name}. Please try a direct URL instead.`);
+                return of(null);
+              })
+            );
+          });
+
+          forkJoin(uploadPromises).subscribe({
+            next: (urls) => {
+              const successfulUrls = urls.filter(url => url !== null) as string[];
+              if (successfulUrls.length > 0) {
+                this.imageUrls.push(...successfulUrls);
+                this.toastService.warning(`Successfully uploaded ${successfulUrls.length} of ${files.length} images. Some failed.`);
+              } else {
+                this.toastService.error('Failed to upload images. Please try using direct URLs instead.');
+              }
+              this.uploadingImages = false;
+            },
+            error: (fallbackErr) => {
+              console.error('Error uploading images (fallback):', fallbackErr);
+              this.toastService.error('Failed to upload images. Please try using direct URLs instead.');
+              this.uploadingImages = false;
+            }
+          });
         }
       });
       

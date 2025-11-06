@@ -14,9 +14,8 @@ export interface OrderRequest {
     street: string;
     phone?: string;
   };
-  paymentMethod: 'cash_on_delivery' | 'khalti';
+  paymentMethod: 'cash_on_delivery';
   paymentStatus?: 'pending' | 'completed' | 'failed';
-  khaltiPaymentId?: string;
 }
 
 export interface OrderResponse {
@@ -64,20 +63,6 @@ export class OrderService {
     return this.http.post<OrderResponse>(
       Endpoint.PLACE_ORDER,
       orderData,
-      { headers }
-    );
-  }
-
-  verifyKhaltiPayment(paymentData: any): Observable<any> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    });
-
-    return this.http.post(
-      Endpoint.VERIFY_KHALTI_PAYMENT,
-      paymentData,
       { headers }
     );
   }

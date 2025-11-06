@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, from, forkJoin, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
+import { Endpoint } from '../const/end-point';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageUploadService {
-  // Imgur API endpoint - Free tier allows anonymous uploads
+  // Imgur API endpoint - Free tier allows anonymous uploads (kept for backward compatibility)
   private readonly IMGUR_UPLOAD_URL = 'https://api.imgur.com/3/image';
   // You can get a client ID from https://api.imgur.com/oauth2/addclient (optional but recommended for higher rate limits)
   private readonly IMGUR_CLIENT_ID = 'Client-ID 546c25a59c58ad7'; // Public anonymous client ID
@@ -15,7 +16,85 @@ export class ImageUploadService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Upload image to Imgur and return the URL
+   * Get authentication headers for API requests
+   * Note: For FormData, don't set Content-Type - browser will set it automatically with boundary
+   */
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+      // Don't set Content-Type for FormData - browser will set it with boundary
+    });
+    return headers;
+  }
+
+  /**
+   * Upload single image to Cloudinary via backend
+   */
+  uploadToCloudinary(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    return this.http.post<any>(Endpoint.UPLOAD_SINGLE_IMAGE, formData, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(response => {
+        if (response && response.url) {
+          return response.url;
+        }
+        throw new Error('Failed to upload image to Cloudinary');
+      }),
+      catchError(err => {
+        console.error('Cloudinary upload error:', err);
+        throw err;
+      })
+    );
+  }
+
+  /**
+   * Upload multiple images to Cloudinary via backend
+   */
+  uploadMultipleToCloudinary(files: File[]): Observable<string[]> {
+    if (!files || files.length === 0) {
+      return of([]);
+    }
+
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('images', file);
+    });
+
+    return this.http.post<any>(Endpoint.UPLOAD_MULTIPLE_IMAGES, formData, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(response => {
+        if (response && response.images && Array.isArray(response.images)) {
+          return response.images.map((img: any) => img.url);
+        }
+        throw new Error('Failed to upload images to Cloudinary');
+      }),
+      catchError(err => {
+        console.error('Cloudinary upload error:', err);
+        throw err;
+      })
+    );
+  }
+
+  /**
+   * Upload image to Cloudinary (primary method)
+   * Falls back to Imgur if Cloudinary fails
+   */
+  uploadImage(file: File): Observable<string> {
+    return this.uploadToCloudinary(file).pipe(
+      catchError(err => {
+        console.warn('Cloudinary upload failed, falling back to Imgur:', err);
+        return this.uploadToImgur(file);
+      })
+    );
+  }
+
+  /**
+   * Upload image to Imgur and return the URL (kept for backward compatibility)
    * Note: Imgur allows anonymous uploads without API key, but rate limits are lower
    */
   uploadToImgur(file: File): Observable<string> {
@@ -268,7 +347,7 @@ export class ImageUploadService {
   }
 
   /**
-   * Process images - upload files to Imgur or use provided URLs
+   * Process images - upload files to Cloudinary or use provided URLs
    * Returns array of image URLs
    */
   processImages(files: File[], existingUrls: string[] = []): Observable<string[]> {
@@ -277,11 +356,14 @@ export class ImageUploadService {
       return of(existingUrls.filter(url => this.isValidImageUrl(url)));
     }
 
-    // Upload files to Imgur
-    const uploadPromises = files.map(file => this.uploadToImgur(file));
-
-    // Upload all files and combine with existing URLs
-    return forkJoin(uploadPromises).pipe(
+    // Upload files to Cloudinary (preferred) or fallback to Imgur
+    return this.uploadMultipleToCloudinary(files).pipe(
+      catchError(err => {
+        console.warn('Cloudinary upload failed, falling back to Imgur:', err);
+        // Fallback to Imgur
+        const uploadPromises = files.map(file => this.uploadToImgur(file));
+        return forkJoin(uploadPromises);
+      }),
       map(uploadedUrls => {
         const validExisting = existingUrls.filter(url => this.isValidImageUrl(url));
         return [...validExisting, ...uploadedUrls];

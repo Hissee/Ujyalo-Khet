@@ -30,6 +30,11 @@ export class AddProductComponent implements OnInit {
   uploadingImages = false;
   uploadProgress: { [key: number]: number } = {};
   filesToUpload: File[] = [];
+  imageError: string | null = null;
+  
+  // Image validation constants
+  readonly MIN_IMAGES = 2;
+  readonly MAX_IMAGES = 5;
 
   // Price suggestion
   priceSuggestion: any = null;
@@ -81,6 +86,15 @@ export class AddProductComponent implements OnInit {
       
       if (files.length === 0) {
         this.toastService.error('Please select only image files');
+        return;
+      }
+
+      // Check if adding these files would exceed the maximum
+      const totalAfterUpload = this.imageUrls.length + files.length;
+      if (totalAfterUpload > this.MAX_IMAGES) {
+        const allowedCount = this.MAX_IMAGES - this.imageUrls.length;
+        this.toastService.error(`You can only upload ${allowedCount} more image(s). Maximum ${this.MAX_IMAGES} images allowed.`);
+        input.value = '';
         return;
       }
 
@@ -139,6 +153,12 @@ export class AddProductComponent implements OnInit {
   addImageUrl(): void {
     const url = this.newImageUrl.trim();
     if (url) {
+      // Check if adding this URL would exceed the maximum
+      if (this.imageUrls.length >= this.MAX_IMAGES) {
+        this.toastService.error(`Maximum ${this.MAX_IMAGES} images allowed. Please remove an image first.`);
+        return;
+      }
+
       if (this.imageUploadService.isValidImageUrl(url)) {
         // If it's a Google Photos or Google Drive link, convert it if needed
         if (this.imageUploadService.isGooglePhotosLink(url) || this.imageUploadService.isGoogleDriveLink(url)) {
@@ -168,6 +188,75 @@ export class AddProductComponent implements OnInit {
 
   removeImageUrl(index: number): void {
     this.imageUrls.splice(index, 1);
+    this.imageError = null;
+  }
+
+  // Drag and drop handlers
+  preventDefault(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (this.imageUrls.length >= this.MAX_IMAGES) {
+      this.imageError = `Maximum ${this.MAX_IMAGES} images allowed.`;
+      return;
+    }
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files).filter(file => file.type.startsWith('image/'));
+      if (fileArray.length > 0) {
+        this.handleFiles(fileArray);
+      }
+    }
+  }
+
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const files = Array.from(input.files).filter(file => file.type.startsWith('image/'));
+      if (files.length > 0) {
+        this.handleFiles(files);
+      }
+      input.value = '';
+    }
+  }
+
+  private handleFiles(files: File[]): void {
+    // Check if adding these files would exceed the maximum
+    const totalAfterUpload = this.imageUrls.length + files.length;
+    if (totalAfterUpload > this.MAX_IMAGES) {
+      const allowedCount = this.MAX_IMAGES - this.imageUrls.length;
+      this.imageError = `You can only upload ${allowedCount} more image(s). Maximum ${this.MAX_IMAGES} images allowed.`;
+      return;
+    }
+
+    this.uploadingImages = true;
+    this.error = null;
+    this.imageError = null;
+
+    // Upload files to Cloudinary
+    this.imageUploadService.uploadMultipleToCloudinary(files).subscribe({
+      next: (urls) => {
+        if (urls && urls.length > 0) {
+          this.imageUrls.push(...urls);
+          this.uploadingImages = false;
+          this.imageError = null;
+        } else {
+          this.uploadingImages = false;
+          this.imageError = 'No images were uploaded successfully.';
+        }
+      },
+      error: (err) => {
+        console.error('Error uploading images to Cloudinary:', err);
+        this.uploadingImages = false;
+        this.imageError = 'Failed to upload images. Please try again.';
+      }
+    });
   }
 
   onSubmit(): void {
@@ -176,15 +265,26 @@ export class AddProductComponent implements OnInit {
       return;
     }
 
-    this.submitting = true;
-    this.error = null;
-    this.successMessage = '';
-
     // Filter out any base64 data URLs and only keep actual URLs
     const validImageUrls = this.imageUrls.filter(url => {
       // Remove base64 data URLs (if any) and keep only http/https URLs
       return url.startsWith('http://') || url.startsWith('https://');
     });
+
+    // Validate image count
+    if (validImageUrls.length < this.MIN_IMAGES) {
+      this.toastService.error(`Please upload at least ${this.MIN_IMAGES} product images. Currently you have ${validImageUrls.length} image(s).`);
+      return;
+    }
+
+    if (validImageUrls.length > this.MAX_IMAGES) {
+      this.toastService.error(`Maximum ${this.MAX_IMAGES} images allowed. Please remove ${validImageUrls.length - this.MAX_IMAGES} image(s).`);
+      return;
+    }
+
+    this.submitting = true;
+    this.error = null;
+    this.successMessage = '';
 
     const productData = {
       ...this.productForm.value,

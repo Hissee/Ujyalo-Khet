@@ -20,12 +20,30 @@
   border-bottom: 2px solid #dee2e6;
 }
 
-.input-group .btn {
-  width: 38px;
+.input-group {
+  display: flex;
+  flex-direction: row;
+  /* align-items: stretch; */
 }
 
-.input-group .form-control {
-  flex: 0 0 auto;
+.input-group .btn {
+  width: 32px;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.input-group input[type="number"] {
+  text-align: center !important;
+  /* Remove spinner arrows for Chrome, Safari, Edge */
+  -moz-appearance: textfield;
+}
+
+/* Remove spinner arrows for Chrome, Safari, Edge */
+.input-group input[type="number"]::-webkit-outer-spin-button,
+.input-group input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .btn-primary {

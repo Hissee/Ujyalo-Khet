@@ -61,14 +61,16 @@
                     </p>
                     <p class="mb-0">
                       <strong>Available:</strong> 
-                      <span class="badge bg-success">{{ item.product.quantity }} kg</span>
+                      <span>{{ item.product.quantity }} kg</span>
                     </p>
                   </div>
                   
                   <!-- Quantity Controls -->
                   <div class="col-md-2">
-                    <label class="form-label">Quantity (kg)</label>
-                    <div class="input-group">
+                    <label class="form-label">
+                      <strong>Quantity (kg):</strong>
+                    </label>
+                    <div class="input-group" style="max-width: 200px;">
                       <button 
                         class="btn btn-outline-secondary" 
                         type="button"
@@ -82,8 +84,7 @@
                         [value]="item.quantity"
                         [min]="1"
                         [max]="item.product.quantity"
-                        (change)="updateQuantity(item.product.id, $event)"
-                        style="width: 60px;">
+                        (change)="updateQuantity(item.product.id, $event)">
                       <button 
                         class="btn btn-outline-secondary" 
                         type="button"

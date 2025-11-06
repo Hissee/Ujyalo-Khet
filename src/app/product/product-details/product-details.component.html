@@ -17,16 +17,80 @@
 } @else if (product) {
   <div class="container my-4">
     <div class="row">
-      <div class="col-md-6 mb-4">
-        <img
-          [src]="getProductImage()"
-          alt="{{ product.name }}"
-          class="img-fluid rounded shadow"
-          (error)="handleImageError($event)"
-        />
+      <div class="col-md-8 mb-4">
+        <!-- Image Carousel -->
+        <div class="product-image-carousel">
+          <!-- Thumbnail Gallery (Left Side) -->
+          @if (allImages.length > 1) {
+            <div class="thumbnail-gallery">
+              @for (image of allImages; track $index) {
+                <div 
+                  class="thumbnail-item"
+                  [class.active]="$index === currentImageIndex"
+                  (click)="selectImage($index)"
+                  (mouseenter)="stopCarousel()"
+                  (mouseleave)="startCarousel()">
+                  <img
+                    [src]="image"
+                    [alt]="product.name + ' image ' + ($index + 1)"
+                    class="thumbnail-image"
+                    (error)="handleImageError($event)">
+                </div>
+              }
+            </div>
+          }
+          
+          <!-- Main Image Display -->
+          <div class="main-image-container">
+            <div class="image-slider" [style.transform]="'translateX(-' + (currentImageIndex * 100) + '%)'">
+              @for (image of allImages; track $index) {
+                <div class="slide-item">
+                  <img
+                    [src]="image"
+                    [alt]="product.name + ' image ' + ($index + 1)"
+                    class="img-fluid rounded shadow product-detail-image"
+                    (error)="handleImageError($event)">
+                </div>
+              }
+            </div>
+            
+            <!-- Navigation Arrows (if multiple images) -->
+            @if (allImages.length > 1) {
+              <button 
+                class="carousel-nav-btn carousel-prev"
+                (click)="previousImage(); startCarousel()"
+                (mouseenter)="stopCarousel()"
+                (mouseleave)="startCarousel()"
+                aria-label="Previous image">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <button 
+                class="carousel-nav-btn carousel-next"
+                (click)="nextImage(); startCarousel()"
+                (mouseenter)="stopCarousel()"
+                (mouseleave)="startCarousel()"
+                aria-label="Next image">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+              
+              <!-- Image Indicators -->
+              <div class="image-indicators">
+                @for (image of allImages; track $index) {
+                  <span 
+                    class="indicator-dot"
+                    [class.active]="$index === currentImageIndex"
+                    (click)="selectImage($index)"
+                    (mouseenter)="stopCarousel()"
+                    (mouseleave)="startCarousel()">
+                  </span>
+                }
+              </div>
+            }
+          </div>
+        </div>
       </div>
 
-      <div class="col-md-6">
+      <div class="col-md-4">
         <div class="product-details-info">
           <!-- Product Name -->
           <h1 class="mb-4">{{ product.name }}</h1>
@@ -38,41 +102,33 @@
 
           <!-- Quantity Available -->
           <div class="mb-3">
-            <strong>Quantity Available:</strong>
-            <span class="badge bg-success ms-2 fs-6">{{ product.quantity }} kg</span>
+            <strong>Quantity Available:</strong> <span class="ms-2">{{ product.quantity }} kg</span>
           </div>
 
           <!-- Description -->
-          <div class="mb-4">
-            <h5>Description</h5>
-            <p class="text-muted">{{ product.description }}</p>
+          <div class="mb-3">
+            <strong>Description:</strong> <span class="ms-2">{{ product.description || 'No description available' }}</span>
           </div>
 
           <!-- Harvest Date -->
           <div class="mb-3">
-            <strong>Harvested Date:</strong>
-            <span class="ms-2">{{ product.harvestDate || 'Not specified' }}</span>
+            <strong>Harvested Date:</strong> <span class="ms-2">{{ product.harvestDate || 'Not specified' }}</span>
           </div>
 
           <!-- Additional Info (if available) -->
           @if (product.category) {
             <div class="mb-2">
-              <strong>Category:</strong>
-              <span class="ms-2">{{ product.category }}</span>
+              <strong>Category:</strong> <span class="ms-2">{{ product.category }}</span>
             </div>
           }
           @if (product.farmerName) {
             <div class="mb-2">
-              <strong>Farmer:</strong>
-              <span class="ms-2">{{ product.farmerName }}</span>
+              <strong>Farmer:</strong> <span class="ms-2">{{ product.farmerName }}</span>
             </div>
           }
           @if (product.organic !== undefined) {
             <div class="mb-4">
-              <strong>Organic:</strong>
-              <span class="badge ms-2" [class.bg-success]="product.organic" [class.bg-secondary]="!product.organic">
-                {{ product.organic ? 'Yes' : 'No' }}
-              </span>
+              <strong>Organic:</strong> <span class="ms-2">{{ product.organic ? 'Yes' : 'No' }}</span>
             </div>
           }
 
@@ -133,39 +189,34 @@
 
           <!-- Action Buttons - Only show for consumers, not farmers -->
           @if (!isFarmer) {
-            <div class="d-flex flex-column flex-md-row gap-2 mb-3">
+            <div class="d-flex flex-row gap-2 mb-3">
               <button 
-                class="btn btn-success btn-lg flex-fill"
+                class="btn btn-success btn-lg flex-fill action-btn"
                 (click)="addToCart()"
                 [disabled]="addingToCart || product.quantity === 0 || orderQuantity <= 0">
                 @if (addingToCart) {
-                  <i class="fas fa-check"></i> Added to Cart
+                  <i class="fas fa-check"></i>
+                  <span class="btn-text">Added to Cart</span>
                 } @else {
-                  <i class="fas fa-cart-plus"></i> Add to Cart
+                  <i class="fas fa-cart-plus"></i>
+                  <span class="btn-text">Add to Cart</span>
                 }
               </button>
               
               <button 
-                class="btn btn-success btn-lg flex-fill"
+                class="btn btn-success btn-lg flex-fill action-btn"
                 (click)="placeOrder()"
                 [disabled]="placingOrder || product.quantity === 0 || orderQuantity <= 0">
                 @if (placingOrder) {
-                  <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                  Processing...
+                  <span class="spinner-border spinner-border-sm" role="status"></span>
+                  <span class="btn-text">Processing...</span>
                 } @else {
-                  <i class="fas fa-shopping-bag"></i> Place Order
+                  <i class="fas fa-shopping-bag"></i>
+                  <span class="btn-text">Place Order</span>
                 }
               </button>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="d-flex gap-2">
-              <button 
-                class="btn btn-outline-success"
-                (click)="viewCart()">
-                <i class="fas fa-shopping-cart"></i> View Cart
-              </button>
-            </div>
           } @else {
             <!-- Farmer View - Show info message instead -->
             <div class="alert alert-success">
@@ -175,6 +226,14 @@
         </div>
       </div>
     </div>
+    
+    <!-- Floating Cart Button -->
+    <button 
+      class="floating-cart-btn"
+      (click)="viewCart()"
+      title="View Cart">
+      <i class="fas fa-shopping-cart"></i>
+    </button>
   </div>
 } @else {
   <div class="container my-4">

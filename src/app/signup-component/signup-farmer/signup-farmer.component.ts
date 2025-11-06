@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { ToastService } from '../../services/toast.service';
@@ -24,6 +24,8 @@ export class SignupFarmerComponent {
   otpForm: FormGroup = new FormGroup({});
   resendOTPLoading = false;
   resendOTPMessage = '';
+  showPassword = false;
+  showConfirmPassword = false;
 
   provinces: string[] = [
     'Gandaki', 'Bagmati', 'Madesh', 'Lumbini', 'Karnali', 'Koshi', 'Sudurpaschim'
@@ -31,15 +33,15 @@ export class SignupFarmerComponent {
 
   constructor(private fb: FormBuilder) {
     this.signupForm = this.fb.group({
-      firstName: ['', Validators.required],
-      middleName: [''],
-      lastName: ['', Validators.required],
-      phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
-      email: ['', [Validators.required, Validators.email]],
+      firstName: ['', [Validators.required, this.nameValidator]],
+      middleName: ['', [this.nameValidator]],
+      lastName: ['', [Validators.required, this.nameValidator]],
+      phone: ['', [Validators.required, this.phoneValidator]],
+      email: ['', [Validators.required, this.emailValidator]],
       province: ['', Validators.required],
-      city: ['', Validators.required],
-      street: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      city: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      street: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
+      password: ['', [Validators.required, this.strongPasswordValidator]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
     
@@ -51,6 +53,100 @@ export class SignupFarmerComponent {
   passwordMatchValidator(form: FormGroup) {
     return form.get('password')!.value === form.get('confirmPassword')!.value
       ? null : { mismatch: true };
+  }
+
+  // Strong password validator
+  strongPasswordValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const password = control.value;
+    const errors: ValidationErrors = {};
+
+    if (password.length < 8) {
+      errors['minlength'] = true;
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors['uppercase'] = true;
+    }
+    if (!/[a-z]/.test(password)) {
+      errors['lowercase'] = true;
+    }
+    if (!/[0-9]/.test(password)) {
+      errors['number'] = true;
+    }
+    // Special characters: @, $, !, %, *, ?, & and other common special characters
+    if (!/[@$!%*?&_+\-=\[\]{};':"\\|,.<>\/()^#]/.test(password)) {
+      errors['special'] = true;
+    }
+
+    return Object.keys(errors).length > 0 ? errors : null;
+  }
+
+  // Name validator (letters, spaces, hyphens only, 2-50 characters)
+  nameValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const name = control.value.trim();
+    const nameRegex = /^[a-zA-Z\s\-']{2,50}$/;
+
+    if (name.length < 2) {
+      return { minlength: true };
+    }
+    if (name.length > 50) {
+      return { maxlength: true };
+    }
+    if (!nameRegex.test(name)) {
+      return { invalidFormat: true };
+    }
+
+    return null;
+  }
+
+  // Phone validator for Nepal (10 digits, typically starts with 9)
+  phoneValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const phone = control.value.trim();
+    const phoneRegex = /^9[0-9]{9}$/; // Nepal mobile numbers start with 9
+
+    if (!/^[0-9]{10}$/.test(phone)) {
+      return { invalidFormat: true };
+    }
+    if (!phoneRegex.test(phone)) {
+      return { invalidPrefix: true };
+    }
+
+    return null;
+  }
+
+  // Email validator (stronger)
+  emailValidator(control: AbstractControl): ValidationErrors | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const email = control.value.trim().toLowerCase();
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    if (!emailRegex.test(email)) {
+      return { invalidFormat: true };
+    }
+
+    // Additional checks
+    if (email.length > 100) {
+      return { maxlength: true };
+    }
+    if (email.includes('..') || email.startsWith('.') || email.startsWith('@')) {
+      return { invalidFormat: true };
+    }
+
+    return null;
   }
 
   onSubmit() {
@@ -95,9 +191,9 @@ export class SignupFarmerComponent {
           if (res.requiresOTPVerification) {
             this.showOTPForm = true;
             this.userEmail = res.email || farmerData.email;
-            this.successMessage = res.message || 'OTP sent to your email. Please verify to complete signup.';
             this.errorMessage = '';
-            this.toastService.success(res.message || 'OTP sent to your email. Please verify to complete signup.');
+            const message = res.message || 'OTP sent to your email. Please verify to complete signup.';
+            this.toastService.success(message);
           } else {
             this.successMessage = res.message || 'Signup successful!';
             this.toastService.success(res.message || 'Signup successful!');
@@ -203,5 +299,13 @@ export class SignupFarmerComponent {
           console.error('Resend OTP error:', err);
         }
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 }

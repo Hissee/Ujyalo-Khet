@@ -64,6 +64,8 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
   otpForm: FormGroup = new FormGroup({});
   resendOTPLoading = false;
   resendOTPMessage = '';
+  showPassword = false;
+  showConfirmPassword = false;
 
   constructor(private http: HttpClient, private fb: FormBuilder) {}
 
@@ -113,9 +115,9 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
           if (res.requiresOTPVerification) {
             this.showOTPForm = true;
             this.userEmail = res.email || user.email;
-            this.successMessage = res.message || 'OTP sent to your email. Please verify to complete signup.';
             this.errorMessage = '';
-            this.toastService.success(res.message || 'OTP sent to your email. Please verify to complete signup.');
+            const message = res.message || 'OTP sent to your email. Please verify to complete signup.';
+            this.toastService.success(message);
           } else {
             this.successMessage = res.message || 'Signup successful!';
             this.toastService.success(res.message || 'Signup successful!');
@@ -221,6 +223,14 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
           console.error('Resend OTP error:', err);
         }
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
 }

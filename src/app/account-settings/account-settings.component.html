@@ -145,7 +145,7 @@
                         id="phone"
                         [(ngModel)]="profileData.phone"
                         name="phone"
-                        placeholder="10-digit phone number"
+                        placeholder="98XXXXXXXX"
                         pattern="[0-9]{10}"
                         maxlength="10"
                         required
@@ -232,12 +232,6 @@
                       <h6 class="card-title mb-3"><i class="bi bi-key"></i> Change Password</h6>
                       <p class="text-muted small mb-4">Update your password to keep your account secure. We'll send an OTP to your email for verification.</p>
 
-                      @if (successMessage && otpRequested) {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                          <i class="bi bi-check-circle"></i> {{ successMessage }}
-                          <button type="button" class="btn-close" (click)="successMessage = ''"></button>
-                        </div>
-                      }
 
                       @if (error && (otpRequested || requestingOTP || changingPassword)) {
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -293,40 +287,76 @@
                             <label for="changeNewPassword" class="form-label">
                               New Password <span class="text-danger">*</span>
                             </label>
-                            <input
-                              type="password"
-                              class="form-control"
-                              id="changeNewPassword"
-                              formControlName="newPassword"
-                              placeholder="Enter new password (min 6 characters)"
-                              autocomplete="new-password"
-                              [disabled]="changingPassword"
-                              [class.is-invalid]="passwordChangeForm.get('newPassword')?.invalid && passwordChangeForm.get('newPassword')?.touched">
+                            <div class="position-relative">
+                              <input
+                                [type]="showNewPassword ? 'text' : 'password'"
+                                class="form-control"
+                                id="changeNewPassword"
+                                formControlName="newPassword"
+                                placeholder="Enter strong password"
+                                autocomplete="new-password"
+                                [disabled]="changingPassword"
+                                style="padding-right: 3rem;"
+                                [class.is-invalid]="passwordChangeForm.get('newPassword')?.invalid && passwordChangeForm.get('newPassword')?.touched">
+                              <button 
+                                type="button" 
+                                class="btn btn-link position-absolute top-50 translate-middle-y" 
+                                (click)="toggleNewPasswordVisibility()"
+                                [disabled]="changingPassword"
+                                style="right: 0.75rem; border: none; background: none; z-index: 10; cursor: pointer; padding: 0; transform: translateY(-50%);">
+                                <i [class]="showNewPassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted'" style="font-size: 1.2rem;"></i>
+                              </button>
+                            </div>
                             @if (passwordChangeForm.get('newPassword')?.invalid && passwordChangeForm.get('newPassword')?.touched) {
-                              <div class="invalid-feedback">
-                                @if (passwordChangeForm.get('newPassword')?.errors?.['required']) {
-                                  Password is required
-                                } @else if (passwordChangeForm.get('newPassword')?.errors?.['minlength']) {
-                                  Password must be at least 6 characters
-                                }
+                              <div class="text-danger small">
+                                <div><strong>Password requirements:</strong></div>
+                                <ul class="mb-0 ps-3">
+                                  @if (passwordChangeForm.get('newPassword')?.errors?.['minlength']) {
+                                    <li>Have at least 8 characters</li>
+                                  }
+                                  @if (passwordChangeForm.get('newPassword')?.errors?.['uppercase']) {
+                                    <li>Contain at least one uppercase letter</li>
+                                  }
+                                  @if (passwordChangeForm.get('newPassword')?.errors?.['lowercase']) {
+                                    <li>Contain at least one lowercase letter</li>
+                                  }
+                                  @if (passwordChangeForm.get('newPassword')?.errors?.['number']) {
+                                    <li>Contain at least one number</li>
+                                  }
+                                  @if (passwordChangeForm.get('newPassword')?.errors?.['special']) {
+                                    <li>Contain at least one special character (&#64;, $, !, %, *, ?, & etc.)</li>
+                                  }
+                                </ul>
                               </div>
+                            } @else {
+                              <small class="text-muted">Password must be at least 8 characters with uppercase, lowercase, number, and special character</small>
                             }
-                            <small class="text-muted">Password must be at least 6 characters long</small>
                           </div>
 
                           <div class="mb-3">
                             <label for="changeConfirmPassword" class="form-label">
                               Confirm New Password <span class="text-danger">*</span>
                             </label>
-                            <input
-                              type="password"
-                              class="form-control"
-                              id="changeConfirmPassword"
-                              formControlName="confirmPassword"
-                              placeholder="Confirm your new password"
-                              autocomplete="new-password"
-                              [disabled]="changingPassword"
-                              [class.is-invalid]="passwordChangeForm.get('confirmPassword')?.invalid && passwordChangeForm.get('confirmPassword')?.touched">
+                            <div class="position-relative">
+                              <input
+                                [type]="showConfirmPassword ? 'text' : 'password'"
+                                class="form-control"
+                                id="changeConfirmPassword"
+                                formControlName="confirmPassword"
+                                placeholder="Confirm your new password"
+                                autocomplete="new-password"
+                                [disabled]="changingPassword"
+                                style="padding-right: 3rem;"
+                                [class.is-invalid]="passwordChangeForm.get('confirmPassword')?.invalid && passwordChangeForm.get('confirmPassword')?.touched">
+                              <button 
+                                type="button" 
+                                class="btn btn-link position-absolute top-50 translate-middle-y" 
+                                (click)="toggleConfirmPasswordVisibility()"
+                                [disabled]="changingPassword"
+                                style="right: 0.75rem; border: none; background: none; z-index: 10; cursor: pointer; padding: 0; transform: translateY(-50%);">
+                                <i [class]="showConfirmPassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted'" style="font-size: 1.2rem;"></i>
+                              </button>
+                            </div>
                             @if (passwordChangeForm.get('confirmPassword')?.invalid && passwordChangeForm.get('confirmPassword')?.touched) {
                               <div class="invalid-feedback">
                                 @if (passwordChangeForm.get('confirmPassword')?.errors?.['required']) {
@@ -392,15 +422,26 @@
                       <label for="deactivatePassword" class="form-label">
                         Enter your password to deactivate account <span class="text-danger">*</span>
                       </label>
-                      <input
-                        type="password"
-                        class="form-control"
-                        id="deactivatePassword"
-                        [(ngModel)]="deactivatePassword"
-                        name="deactivatePassword"
-                        placeholder="Enter your password"
-                        required
-                        [disabled]="deactivating">
+                      <div class="position-relative">
+                        <input
+                          [type]="showDeactivatePassword ? 'text' : 'password'"
+                          class="form-control"
+                          id="deactivatePassword"
+                          [(ngModel)]="deactivatePassword"
+                          name="deactivatePassword"
+                          placeholder="Enter your password"
+                          style="padding-right: 3rem;"
+                          required
+                          [disabled]="deactivating">
+                        <button 
+                          type="button" 
+                          class="btn btn-link position-absolute top-50 translate-middle-y" 
+                          (click)="toggleDeactivatePasswordVisibility()"
+                          [disabled]="deactivating"
+                          style="right: 0.75rem; border: none; background: none; z-index: 10; cursor: pointer; padding: 0; transform: translateY(-50%);">
+                          <i [class]="showDeactivatePassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted'" style="font-size: 1.2rem;"></i>
+                        </button>
+                      </div>
                       <small class="text-muted">We need to verify your identity before deactivating your account.</small>
                     </div>
 
@@ -448,15 +489,26 @@
                       <label for="deletePassword" class="form-label">
                         Enter your password to delete account <span class="text-danger">*</span>
                       </label>
-                      <input
-                        type="password"
-                        class="form-control"
-                        id="deletePassword"
-                        [(ngModel)]="deletePassword"
-                        name="deletePassword"
-                        placeholder="Enter your password"
-                        required
-                        [disabled]="deleting">
+                      <div class="position-relative">
+                        <input
+                          [type]="showDeletePassword ? 'text' : 'password'"
+                          class="form-control"
+                          id="deletePassword"
+                          [(ngModel)]="deletePassword"
+                          name="deletePassword"
+                          placeholder="Enter your password"
+                          style="padding-right: 3rem;"
+                          required
+                          [disabled]="deleting">
+                        <button 
+                          type="button" 
+                          class="btn btn-link position-absolute top-50 translate-middle-y" 
+                          (click)="toggleDeletePasswordVisibility()"
+                          [disabled]="deleting"
+                          style="right: 0.75rem; border: none; background: none; z-index: 10; cursor: pointer; padding: 0; transform: translateY(-50%);">
+                          <i [class]="showDeletePassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted'" style="font-size: 1.2rem;"></i>
+                        </button>
+                      </div>
                       <small class="text-muted">We need to verify your identity before permanently deleting your account.</small>
                     </div>
 

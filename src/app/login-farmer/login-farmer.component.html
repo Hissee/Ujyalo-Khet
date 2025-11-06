@@ -20,13 +20,23 @@
       <!-- Password -->
       <div class="mb-4">
         <label for="password" class="form-label">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          class="form-control" 
-          formControlName="password" 
-          placeholder="Enter your password" 
-          required>
+        <div class="position-relative">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            id="password" 
+            class="form-control" 
+            formControlName="password" 
+            placeholder="Enter your password" 
+            style="padding-right: 3rem;"
+            required>
+          <button 
+            type="button" 
+            class="btn btn-link position-absolute top-50 translate-middle-y" 
+            (click)="togglePasswordVisibility()"
+            style="right: 0.75rem; border: none; background: none; z-index: 10; cursor: pointer; padding: 0; transform: translateY(-50%);">
+            <i [class]="showPassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted'" style="font-size: 1.2rem;"></i>
+          </button>
+        </div>
         @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
           <small class="text-danger">Password is required</small>
         }

@@ -28,16 +28,47 @@
           <div class="col-md-4">
             <input type="text" class="form-control" formControlName="firstName" placeholder="First Name" required>
             @if (signupForm.get('firstName')?.invalid && signupForm.get('firstName')?.touched) {
-              <small class="text-danger">First name is required</small>
+              <small class="text-danger">
+                @if (signupForm.get('firstName')?.errors?.['required']) {
+                  First name is required
+                } @else if (signupForm.get('firstName')?.errors?.['minlength']) {
+                  First name must be at least 2 characters
+                } @else if (signupForm.get('firstName')?.errors?.['maxlength']) {
+                  First name must not exceed 50 characters
+                } @else if (signupForm.get('firstName')?.errors?.['invalidFormat']) {
+                  First name can only contain letters, spaces, hyphens, and apostrophes
+                }
+              </small>
             }
           </div>
           <div class="col-md-4">
             <input type="text" class="form-control" formControlName="middleName" placeholder="Middle Name">
+            @if (signupForm.get('middleName')?.invalid && signupForm.get('middleName')?.touched) {
+              <small class="text-danger">
+                @if (signupForm.get('middleName')?.errors?.['minlength']) {
+                  Middle name must be at least 2 characters
+                } @else if (signupForm.get('middleName')?.errors?.['maxlength']) {
+                  Middle name must not exceed 50 characters
+                } @else if (signupForm.get('middleName')?.errors?.['invalidFormat']) {
+                  Middle name can only contain letters, spaces, hyphens, and apostrophes
+                }
+              </small>
+            }
           </div>
           <div class="col-md-4">
             <input type="text" class="form-control" formControlName="lastName" placeholder="Last Name" required>
             @if (signupForm.get('lastName')?.invalid && signupForm.get('lastName')?.touched) {
-              <small class="text-danger">Last name is required</small>
+              <small class="text-danger">
+                @if (signupForm.get('lastName')?.errors?.['required']) {
+                  Last name is required
+                } @else if (signupForm.get('lastName')?.errors?.['minlength']) {
+                  Last name must be at least 2 characters
+                } @else if (signupForm.get('lastName')?.errors?.['maxlength']) {
+                  Last name must not exceed 50 characters
+                } @else if (signupForm.get('lastName')?.errors?.['invalidFormat']) {
+                  Last name can only contain letters, spaces, hyphens, and apostrophes
+                }
+              </small>
             }
           </div>
         </div>
@@ -46,17 +77,34 @@
       <!-- Contact -->
       <div class="mb-3">
         <label for="phone" class="form-label">Phone Number</label>
-        <input type="tel" class="form-control" id="phone" formControlName="phone" placeholder="10-digit phone number" required>
+        <input type="tel" class="form-control" id="phone" formControlName="phone" placeholder="98XXXXXXXX" required>
         @if (signupForm.get('phone')?.invalid && signupForm.get('phone')?.touched) {
-          <small class="text-danger">Valid 10-digit phone number is required</small>
+          <small class="text-danger">
+            @if (signupForm.get('phone')?.errors?.['required']) {
+              Phone number is required
+            } @else if (signupForm.get('phone')?.errors?.['invalidFormat']) {
+              Phone number must be exactly 10 digits
+            } @else if (signupForm.get('phone')?.errors?.['invalidPrefix']) {
+              Phone number must start with 9 (Nepal mobile number)
+            }
+          </small>
         }
+        <small class="text-muted">Enter 10-digit mobile number starting with 9</small>
       </div>
 
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
         <input type="email" class="form-control" id="email" formControlName="email" placeholder="your@email.com" required>
         @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
-          <small class="text-danger">Valid email is required</small>
+          <small class="text-danger">
+            @if (signupForm.get('email')?.errors?.['required']) {
+              Email is required
+            } @else if (signupForm.get('email')?.errors?.['invalidFormat']) {
+              Please enter a valid email address
+            } @else if (signupForm.get('email')?.errors?.['maxlength']) {
+              Email must not exceed 100 characters
+            }
+          </small>
         }
       </div>
 
@@ -78,7 +126,15 @@
         <label for="city" class="form-label">City</label>
         <input type="text" class="form-control" id="city" formControlName="city" placeholder="City" required>
         @if (signupForm.get('city')?.invalid && signupForm.get('city')?.touched) {
-          <small class="text-danger">City is required</small>
+          <small class="text-danger">
+            @if (signupForm.get('city')?.errors?.['required']) {
+              City is required
+            } @else if (signupForm.get('city')?.errors?.['minlength']) {
+              City must be at least 2 characters
+            } @else if (signupForm.get('city')?.errors?.['maxlength']) {
+              City must not exceed 50 characters
+            }
+          </small>
         }
       </div>
 
@@ -86,22 +142,83 @@
         <label for="street" class="form-label">Street Address</label>
         <input type="text" class="form-control" id="street" formControlName="street" placeholder="Street address" required>
         @if (signupForm.get('street')?.invalid && signupForm.get('street')?.touched) {
-          <small class="text-danger">Street address is required</small>
+          <small class="text-danger">
+            @if (signupForm.get('street')?.errors?.['required']) {
+              Street address is required
+            } @else if (signupForm.get('street')?.errors?.['minlength']) {
+              Street address must be at least 5 characters
+            } @else if (signupForm.get('street')?.errors?.['maxlength']) {
+              Street address must not exceed 200 characters
+            }
+          </small>
         }
       </div>
 
       <!-- Password -->
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="password" formControlName="password" placeholder="Minimum 6 characters" required>
+        <div class="position-relative">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            class="form-control" 
+            id="password" 
+            formControlName="password" 
+            placeholder="Enter strong password" 
+            style="padding-right: 3rem;"
+            required>
+          <button 
+            type="button" 
+            class="btn btn-link position-absolute top-50 translate-middle-y" 
+            (click)="togglePasswordVisibility()"
+            style="right: 0.75rem; border: none; background: none; z-index: 10; cursor: pointer; padding: 0; transform: translateY(-50%);">
+            <i [class]="showPassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted'" style="font-size: 1.2rem;"></i>
+          </button>
+        </div>
         @if (signupForm.get('password')?.invalid && signupForm.get('password')?.touched) {
-          <small class="text-danger">Password must be at least 6 characters</small>
+          <div class="text-danger small">
+            <div><strong>Password requirements:</strong></div>
+            <ul class="mb-0 ps-3">
+              @if (signupForm.get('password')?.errors?.['minlength']) {
+                <li>Have at least 8 characters</li>
+              }
+              @if (signupForm.get('password')?.errors?.['uppercase']) {
+                <li>Contain at least one uppercase letter</li>
+              }
+              @if (signupForm.get('password')?.errors?.['lowercase']) {
+                <li>Contain at least one lowercase letter</li>
+              }
+              @if (signupForm.get('password')?.errors?.['number']) {
+                <li>Contain at least one number</li>
+              }
+              @if (signupForm.get('password')?.errors?.['special']) {
+                <li>Contain at least one special character (&#64;, $, !, %, *, ?, & etc.)</li>
+              }
+            </ul>
+          </div>
+        } @else {
+          <small class="text-muted">Password must be at least 8 characters with uppercase, lowercase, number, and special character</small>
         }
       </div>
 
       <div class="mb-4">
         <label for="confirmPassword" class="form-label">Confirm Password</label>
-        <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" placeholder="Confirm your password" required>
+        <div class="position-relative">
+          <input 
+            [type]="showConfirmPassword ? 'text' : 'password'" 
+            class="form-control" 
+            id="confirmPassword" 
+            formControlName="confirmPassword" 
+            placeholder="Confirm your password" 
+            style="padding-right: 3rem;"
+            required>
+          <button 
+            type="button" 
+            class="btn btn-link position-absolute top-50 translate-middle-y" 
+            (click)="toggleConfirmPasswordVisibility()"
+            style="right: 0.75rem; border: none; background: none; z-index: 10; cursor: pointer; padding: 0; transform: translateY(-50%);">
+            <i [class]="showConfirmPassword ? 'bi bi-eye-slash text-muted' : 'bi bi-eye text-muted'" style="font-size: 1.2rem;"></i>
+          </button>
+        </div>
         @if (signupForm.hasError('mismatch') && signupForm.get('confirmPassword')?.touched) {
           <small class="text-danger">Passwords do not match</small>
         }
@@ -153,7 +270,7 @@
             class="form-control text-center" 
             id="otp" 
             formControlName="otp" 
-            placeholder="000000" 
+            placeholder="XXXXXX" 
             maxlength="6"
             style="font-size: 24px; letter-spacing: 8px; font-family: 'Courier New', monospace;"
             required>
@@ -162,11 +279,6 @@
           }
         </div>
 
-        @if (successMessage) {
-          <div class="alert alert-success mb-3" role="alert">
-            {{ successMessage }}
-          </div>
-        }
 
         @if (errorMessage) {
           <div class="alert alert-danger mb-3" role="alert">

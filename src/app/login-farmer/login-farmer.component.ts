@@ -16,6 +16,7 @@ export class LoginFarmerComponent {
   router = inject(Router);
   errorMessage = '';
   loading = false;
+  showPassword = false;
 
   constructor(private fb: FormBuilder) {
     this.loginForm = this.fb.group({
@@ -71,5 +72,9 @@ export class LoginFarmerComponent {
         console.error('Login error:', err);
       }
     });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 }

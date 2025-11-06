@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { FarmerService } from '../services/farmer.service';
 import { ToastService } from '../services/toast.service';
@@ -38,12 +38,16 @@ export class AccountSettingsComponent implements OnInit {
   otpRequested = false;
   requestingOTP = false;
   changingPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
 
   // Delete/Deactivate Account
   deletePassword = '';
   deactivatePassword = '';
   deleting = false;
   deactivating = false;
+  showDeletePassword = false;
+  showDeactivatePassword = false;
 
   provinces: string[] = [
     'Gandaki', 'Bagmati', 'Madesh', 'Lumbini', 'Karnali', 'Koshi', 'Sudurpaschim'
@@ -60,7 +64,7 @@ export class AccountSettingsComponent implements OnInit {
     // Initialize password change form
     this.passwordChangeForm = this.fb.group({
       otp: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      newPassword: ['', [Validators.required, this.strongPasswordValidator]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
   }
@@ -75,6 +79,35 @@ export class AccountSettingsComponent implements OnInit {
     }
     
     return newPassword.value === confirmPassword.value ? null : { mismatch: true };
+  };
+
+  // Strong password validator
+  strongPasswordValidator = (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) {
+      return null;
+    }
+
+    const password = control.value;
+    const errors: ValidationErrors = {};
+
+    if (password.length < 8) {
+      errors['minlength'] = true;
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors['uppercase'] = true;
+    }
+    if (!/[a-z]/.test(password)) {
+      errors['lowercase'] = true;
+    }
+    if (!/[0-9]/.test(password)) {
+      errors['number'] = true;
+    }
+    // Special characters: @, $, !, %, *, ?, & and other common special characters
+    if (!/[@$!%*?&_+\-=\[\]{};':"\\|,.<>\/()^#]/.test(password)) {
+      errors['special'] = true;
+    }
+
+    return Object.keys(errors).length > 0 ? errors : null;
   };
 
   ngOnInit(): void {
@@ -225,8 +258,8 @@ export class AccountSettingsComponent implements OnInit {
       next: (response: any) => {
         this.requestingOTP = false;
         this.otpRequested = true;
-        this.toastService.success(response.message || 'OTP has been sent to your email. Please check your inbox.');
-        this.successMessage = response.message || 'OTP has been sent to your email. Please check your inbox.';
+        const message = response.message || 'OTP has been sent to your email. Please check your inbox.';
+        this.toastService.success(message);
         
         // Ensure form is reset after OTP is sent
         setTimeout(() => {
@@ -251,11 +284,7 @@ export class AccountSettingsComponent implements OnInit {
 
     const formValue = this.passwordChangeForm.value;
 
-    if (formValue.newPassword.length < 6) {
-      this.error = 'New password must be at least 6 characters';
-      return;
-    }
-
+    // Validation is handled by the form validators, but we check for mismatch here
     if (formValue.newPassword !== formValue.confirmPassword) {
       this.error = 'New password and confirm password do not match';
       return;
@@ -297,6 +326,22 @@ export class AccountSettingsComponent implements OnInit {
         this.changingPassword = false;
       }
     });
+  }
+
+  toggleNewPasswordVisibility() {
+    this.showNewPassword = !this.showNewPassword;
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  toggleDeletePasswordVisibility() {
+    this.showDeletePassword = !this.showDeletePassword;
+  }
+
+  toggleDeactivatePasswordVisibility() {
+    this.showDeactivatePassword = !this.showDeactivatePassword;
   }
 
   // Delete Account Functions

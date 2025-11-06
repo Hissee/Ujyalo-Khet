@@ -20,6 +20,8 @@ export class ResetPasswordComponent implements OnInit {
   loading = false;
   email: string = '';
   tokenValid = true;
+  showPassword = false;
+  showConfirmPassword = false;
 
   passwordMatchValidator = (control: AbstractControl) => {
     const formGroup = control as FormGroup;
@@ -114,5 +116,13 @@ export class ResetPasswordComponent implements OnInit {
   getPasswordMismatchError(): boolean {
     return this.resetPasswordForm.hasError('mismatch') && 
            !!this.resetPasswordForm.get('confirmPassword')?.touched;
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility() {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 }

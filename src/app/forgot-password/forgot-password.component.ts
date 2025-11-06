@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../signup-component/auth.service';
+import { ToastService } from '../services/toast.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -14,6 +15,7 @@ export class ForgotPasswordComponent {
   forgotPasswordForm: FormGroup;
   authService = inject(AuthService);
   router = inject(Router);
+  toastService = inject(ToastService);
   errorMessage = '';
   successMessage = '';
   loading = false;
@@ -39,7 +41,8 @@ export class ForgotPasswordComponent {
     this.authService.forgotPassword(email).subscribe({
       next: (res: any) => {
         this.loading = false;
-        this.successMessage = res.message || 'Password reset OTP has been sent to your email.';
+        const message = res.message || 'Password reset OTP has been sent to your email.';
+        this.toastService.success(message);
         
         // If OTP verification is required, redirect to OTP verification page
         if (res.requiresOTPVerification && res.email) {

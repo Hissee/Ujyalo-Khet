@@ -11,7 +11,7 @@ import { CommentService, Comment } from '../../services/comment.service';
 
 @Component({
   selector: 'app-product-details',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.css'
 })

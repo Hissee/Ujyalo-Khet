@@ -1,6 +1,8 @@
+import { environment } from '../environment/environment';
+
 // src/app/constants/endpoint.ts
 export class Endpoint {
-  public static readonly API_BASE: string = 'http://localhost:3000/';
+  public static readonly API_BASE: string = environment.apiUrl;
   public static readonly API_VERSION: string = 'api/';
 
   // Auth

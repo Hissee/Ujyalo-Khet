@@ -1,6 +1,6 @@
 // src/app/constants/endpoint.ts
 export class Endpoint {
-  public static readonly API_BASE: string = 'https://ujyalo-backend.vercel.app/';
+  public static readonly API_BASE: string = 'http://localhost:3000/';
   public static readonly API_VERSION: string = 'api/';
 
   // Auth

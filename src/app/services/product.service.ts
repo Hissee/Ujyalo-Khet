@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ProductService {
-  private apiUrl = 'https://ujyalo-backend.vercel.app/api/products'; // Production backend URL
+  private apiUrl = 'http://localhost:5000/api/products'; // your Node.js backend URL
 
   constructor(private http: HttpClient) {}
 

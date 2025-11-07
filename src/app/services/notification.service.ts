@@ -6,10 +6,10 @@ import { Endpoint } from '../const/end-point';
 export interface Notification {
   _id: string;
   userId: string;
-  type: 'order_placed' | 'order_confirmed' | 'order_processing' | 'order_loaded' | 'order_delivered' | 'order_payment_completed';
+  type: 'order_placed' | 'order_confirmed' | 'order_processing' | 'order_loaded' | 'order_delivered' | 'order_payment_completed' | 'order_status_updated' | 'product_comment' | 'comment_reply';
   title: string;
   message: string;
-  orderId?: string;
+  orderId?: string; // For order notifications, this is orderId. For comment notifications, this is productId
   read: boolean;
   createdAt: Date | string;
 }

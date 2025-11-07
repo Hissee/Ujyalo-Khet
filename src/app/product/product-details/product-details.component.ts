@@ -1,16 +1,18 @@
 import {Component, inject, OnInit, OnDestroy} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IProduct} from '../Iproduct';
 import {ProductService} from '../product.service';
 import { CartService } from '../../cart/cart.service';
 import { OrderService } from '../../services/order.service';
 import { ToastService } from '../../services/toast.service';
+import { CommentService, Comment } from '../../services/comment.service';
+import { RatingService, Rating, RatingStatistics } from '../../services/rating.service';
 
 @Component({
   selector: 'app-product-details',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.css'
 })
@@ -34,10 +36,32 @@ export class ProductDetailsComponent implements OnInit, OnDestroy{
   private carouselInterval: any = null;
   readonly CAROUSEL_INTERVAL = 5000; // 5 seconds
   
+  // Comments
+  comments: Comment[] = [];
+  loadingComments: boolean = false;
+  newCommentText: string = '';
+  addingComment: boolean = false;
+  editingCommentId: string | null = null;
+  editingCommentText: string = '';
+  replyingToCommentId: string | null = null;
+  replyText: string = '';
+  addingReply: boolean = false;
+  
+  // Ratings
+  ratings: Rating[] = [];
+  ratingStatistics: RatingStatistics | null = null;
+  loadingRatings: boolean = false;
+  userRating: Rating | null = null;
+  selectedRating: number = 0; // For star selection
+  hoveredRating: number = 0; // For hover effect
+  submittingRating: boolean = false;
+  
   service = inject(ProductService);
   cartService = inject(CartService);
   orderService = inject(OrderService);
   toastService = inject(ToastService);
+  commentService = inject(CommentService);
+  ratingService = inject(RatingService);
   
   constructor(
     private route: ActivatedRoute,
@@ -66,7 +90,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy{
           this.loading = false;
           this.initializeImages();
           this.startCarousel();
+          this.loadComments(productId);
+          this.loadRatings(productId);
+          this.loadUserRating(productId);
           console.log('Product loaded:', this.product);
+          
+          // Check if we should scroll to comments (e.g., from notification)
+          // This will be handled after comments are loaded
+          setTimeout(() => {
+            this.scrollToCommentsIfNeeded();
+          }, 500);
         },
         error: (err) => {
           console.error('Error loading product:', err);
@@ -75,6 +108,19 @@ export class ProductDetailsComponent implements OnInit, OnDestroy{
           this.product = null;
         }
       });
+  }
+
+  scrollToCommentsIfNeeded(): void {
+    // Check if there's a query parameter indicating we should scroll to comments
+    const scrollToComments = this.route.snapshot.queryParams['scrollToComments'];
+    if (scrollToComments === 'true') {
+      setTimeout(() => {
+        const commentsSection = document.querySelector('.comments-section');
+        if (commentsSection) {
+          commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 1000); // Wait for comments to load
+    }
   }
 
   ngOnDestroy(): void {
@@ -306,4 +352,340 @@ export class ProductDetailsComponent implements OnInit, OnDestroy{
       img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyMCIgZmlsbD0iIzk5OTk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg==';
     }
   }
+
+  // Comment methods
+  loadComments(productId: string): void {
+    this.loadingComments = true;
+    this.commentService.getCommentsByProduct(productId).subscribe({
+      next: (response) => {
+        this.comments = response.data || [];
+        this.loadingComments = false;
+      },
+      error: (err) => {
+        console.error('Error loading comments:', err);
+        this.loadingComments = false;
+        // Don't show error toast for comments, just log it
+      }
+    });
+  }
+
+  addComment(): void {
+    if (!this.product) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.toastService.warning('Please login to add a comment');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 1500);
+      return;
+    }
+
+    const trimmedText = this.newCommentText.trim();
+    if (!trimmedText) {
+      this.toastService.warning('Please enter a comment');
+      return;
+    }
+
+    if (trimmedText.length > 1000) {
+      this.toastService.warning('Comment cannot exceed 1000 characters');
+      return;
+    }
+
+    this.addingComment = true;
+    const productId = this.product._id || this.product.id;
+
+    this.commentService.addComment(String(productId), trimmedText).subscribe({
+      next: (response) => {
+        this.newCommentText = '';
+        this.addingComment = false;
+        this.toastService.success('Comment added successfully');
+        this.loadComments(String(productId));
+      },
+      error: (err) => {
+        console.error('Error adding comment:', err);
+        this.addingComment = false;
+        this.toastService.error(err.error?.message || 'Failed to add comment');
+      }
+    });
+  }
+
+  startReplying(commentId: string): void {
+    this.replyingToCommentId = commentId;
+    this.replyText = '';
+  }
+
+  cancelReply(): void {
+    this.replyingToCommentId = null;
+    this.replyText = '';
+  }
+
+  addReply(commentId: string): void {
+    if (!this.product) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.toastService.warning('Please login to reply');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 1500);
+      return;
+    }
+
+    const trimmedText = this.replyText.trim();
+    if (!trimmedText) {
+      this.toastService.warning('Please enter a reply');
+      return;
+    }
+
+    if (trimmedText.length > 1000) {
+      this.toastService.warning('Reply cannot exceed 1000 characters');
+      return;
+    }
+
+    this.addingReply = true;
+    const productId = this.product._id || this.product.id;
+
+    this.commentService.addComment(String(productId), trimmedText, commentId).subscribe({
+      next: (response) => {
+        this.replyingToCommentId = null;
+        this.replyText = '';
+        this.addingReply = false;
+        this.toastService.success('Reply added successfully');
+        this.loadComments(String(productId));
+      },
+      error: (err) => {
+        console.error('Error adding reply:', err);
+        this.addingReply = false;
+        this.toastService.error(err.error?.message || 'Failed to add reply');
+      }
+    });
+  }
+
+  isProductOwner(): boolean {
+    if (!this.product || !this.user) return false;
+    const productFarmerId = this.product.farmerId;
+    const currentUserId = this.user._id || this.user.id || this.user.userId;
+    return String(productFarmerId) === String(currentUserId);
+  }
+
+  startEditingComment(comment: Comment): void {
+    this.editingCommentId = comment._id;
+    this.editingCommentText = comment.text;
+  }
+
+  cancelEditingComment(): void {
+    this.editingCommentId = null;
+    this.editingCommentText = '';
+  }
+
+  updateComment(commentId: string): void {
+    const trimmedText = this.editingCommentText.trim();
+    if (!trimmedText) {
+      this.toastService.warning('Please enter a comment');
+      return;
+    }
+
+    if (trimmedText.length > 1000) {
+      this.toastService.warning('Comment cannot exceed 1000 characters');
+      return;
+    }
+
+    this.commentService.updateComment(commentId, trimmedText).subscribe({
+      next: (response) => {
+        this.editingCommentId = null;
+        this.editingCommentText = '';
+        this.toastService.success('Comment updated successfully');
+        if (this.product) {
+          const productId = this.product._id || this.product.id;
+          this.loadComments(String(productId));
+        }
+      },
+      error: (err) => {
+        console.error('Error updating comment:', err);
+        this.toastService.error(err.error?.message || 'Failed to update comment');
+      }
+    });
+  }
+
+  deleteComment(commentId: string): void {
+    if (!confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+
+    this.commentService.deleteComment(commentId).subscribe({
+      next: (response) => {
+        this.toastService.success('Comment deleted successfully');
+        if (this.product) {
+          const productId = this.product._id || this.product.id;
+          this.loadComments(String(productId));
+        }
+      },
+      error: (err) => {
+        console.error('Error deleting comment:', err);
+        this.toastService.error(err.error?.message || 'Failed to delete comment');
+      }
+    });
+  }
+
+  isCommentOwner(comment: Comment): boolean {
+    if (!this.user || !comment.userId) return false;
+    const userStr = localStorage.getItem('user');
+    if (!userStr) return false;
+    try {
+      const user = JSON.parse(userStr);
+      // Check if comment belongs to current user by userId
+      const currentUserId = user._id || user.id || user.userId;
+      return comment.userId === String(currentUserId);
+    } catch {
+      return false;
+    }
+  }
+
+  formatDate(date: Date | string): string {
+    if (!date) return '';
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return d.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  // Rating methods
+  loadRatings(productId: string): void {
+    this.loadingRatings = true;
+    this.ratingService.getRatingsByProduct(productId).subscribe({
+      next: (response) => {
+        this.ratings = response.data || [];
+        this.ratingStatistics = response.statistics || null;
+        this.loadingRatings = false;
+        
+        // Update product with latest rating stats
+        if (this.product && this.ratingStatistics) {
+          this.product.averageRating = this.ratingStatistics.averageRating;
+          this.product.totalRatings = this.ratingStatistics.totalRatings;
+        }
+      },
+      error: (err) => {
+        console.error('Error loading ratings:', err);
+        this.loadingRatings = false;
+      }
+    });
+  }
+
+  loadUserRating(productId: string): void {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    this.ratingService.getUserRating(productId).subscribe({
+      next: (response) => {
+        this.userRating = response.data || null;
+        if (this.userRating) {
+          this.selectedRating = this.userRating.rating;
+        }
+      },
+      error: (err) => {
+        console.error('Error loading user rating:', err);
+      }
+    });
+  }
+
+  onStarHover(rating: number): void {
+    if (!this.userRating) {
+      this.hoveredRating = rating;
+    }
+  }
+
+  onStarLeave(): void {
+    this.hoveredRating = 0;
+  }
+
+  onStarClick(rating: number): void {
+    if (!this.product) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.toastService.warning('Please login to rate products');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 1500);
+      return;
+    }
+
+    // Don't allow product owner to rate their own product
+    if (this.isProductOwner()) {
+      this.toastService.warning('You cannot rate your own product');
+      return;
+    }
+
+    this.selectedRating = rating;
+    this.submitRating(rating);
+  }
+
+  submitRating(rating: number): void {
+    if (!this.product) return;
+
+    this.submittingRating = true;
+    const productId = this.product._id || this.product.id;
+
+    this.ratingService.addOrUpdateRating(String(productId), rating).subscribe({
+      next: (response) => {
+        this.submittingRating = false;
+        this.userRating = response.rating;
+        this.selectedRating = rating;
+        this.hoveredRating = 0;
+        this.toastService.success(this.userRating?._id ? 'Rating updated successfully' : 'Rating added successfully');
+        this.loadRatings(String(productId));
+      },
+      error: (err) => {
+        console.error('Error submitting rating:', err);
+        this.submittingRating = false;
+        this.toastService.error(err.error?.message || 'Failed to submit rating');
+      }
+    });
+  }
+
+  deleteRating(): void {
+    if (!this.userRating || !this.product) return;
+
+    if (!confirm('Are you sure you want to delete your rating?')) {
+      return;
+    }
+
+    this.ratingService.deleteRating(this.userRating._id).subscribe({
+      next: (response) => {
+        this.userRating = null;
+        this.selectedRating = 0;
+        this.toastService.success('Rating deleted successfully');
+        const productId = this.product!._id || this.product!.id;
+        this.loadRatings(String(productId));
+      },
+      error: (err) => {
+        console.error('Error deleting rating:', err);
+        this.toastService.error(err.error?.message || 'Failed to delete rating');
+      }
+    });
+  }
+
+  getStarClass(starNumber: number): string {
+    const rating = this.hoveredRating || this.selectedRating;
+    if (starNumber <= rating) {
+      return 'fas fa-star text-warning';
+    }
+    return 'far fa-star text-muted';
+  }
+
+  getAverageRating(): number {
+    return this.product?.averageRating || 0;
+  }
+
+  getTotalRatings(): number {
+    return this.product?.totalRatings || 0;
+  }
+
+  // Expose Math functions for template
+  Math = Math;
 }

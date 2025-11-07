@@ -71,7 +71,9 @@ export class ProductService {
       farmerName: product.farmerName || '', // Use farmerName if available (might come from populated query)
       description: product.description || '',
       harvestDate: harvestDate, // Use harvestDate if available in backend
-      organic: product.organic !== undefined ? product.organic : false // Use organic if available
+      organic: product.organic !== undefined ? product.organic : false, // Use organic if available
+      averageRating: product.averageRating !== undefined ? product.averageRating : undefined,
+      totalRatings: product.totalRatings !== undefined ? product.totalRatings : undefined
     };
   }
 

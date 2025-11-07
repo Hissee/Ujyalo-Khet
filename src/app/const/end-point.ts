@@ -70,4 +70,22 @@ export class Endpoint {
   public static readonly GET_WARDS_BY_MUNICIPALITY = (municipalityId: number) =>
     Endpoint.API_BASE + Endpoint.API_VERSION + `locations/municipalities/${municipalityId}/wards`;
   public static readonly GET_ALL_LOCATIONS = Endpoint.API_BASE + Endpoint.API_VERSION + 'locations/all';
+
+  // Comments
+  public static readonly GET_COMMENTS_BY_PRODUCT = (productId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `comments/product/${productId}`;
+  public static readonly ADD_COMMENT = Endpoint.API_BASE + Endpoint.API_VERSION + 'comments';
+  public static readonly UPDATE_COMMENT = (commentId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `comments/${commentId}`;
+  public static readonly DELETE_COMMENT = (commentId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `comments/${commentId}`;
+
+  // Ratings
+  public static readonly GET_RATINGS_BY_PRODUCT = (productId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `ratings/product/${productId}`;
+  public static readonly GET_USER_RATING = (productId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `ratings/product/${productId}/user`;
+  public static readonly ADD_OR_UPDATE_RATING = Endpoint.API_BASE + Endpoint.API_VERSION + 'ratings';
+  public static readonly DELETE_RATING = (ratingId: string) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `ratings/${ratingId}`;
 }

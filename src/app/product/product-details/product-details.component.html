@@ -100,6 +100,70 @@
             <h3 class="text-success">Rs {{ product.price }}</h3>
           </div>
 
+          <!-- Rating Section -->
+          <div class="mb-3">
+            <div class="d-flex align-items-center mb-2">
+              <div class="product-rating-display me-3">
+                @if (getAverageRating() > 0) {
+                  <div class="d-flex align-items-center">
+                    <span class="rating-value me-2">{{ getAverageRating().toFixed(1) }}</span>
+                    <div class="stars-display">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        @if (star <= Math.floor(getAverageRating())) {
+                          <i class="fas fa-star text-warning" style="font-size: 0.9rem;"></i>
+                        } @else if (star === Math.ceil(getAverageRating()) && getAverageRating() % 1 !== 0) {
+                          <i class="fas fa-star-half-alt text-warning" style="font-size: 0.9rem;"></i>
+                        } @else {
+                          <i class="far fa-star text-muted" style="font-size: 0.9rem;"></i>
+                        }
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <span class="text-muted">No ratings yet</span>
+                }
+              </div>
+              @if (getTotalRatings() > 0) {
+                <small class="text-muted">({{ getTotalRatings() }} {{ getTotalRatings() === 1 ? 'rating' : 'ratings' }})</small>
+              }
+            </div>
+            
+            <!-- User Rating Input - Only show if user is logged in and not product owner -->
+            @if (user && !isProductOwner()) {
+              <div class="user-rating-input">
+                <label class="form-label small mb-1">Your Rating:</label>
+                <div class="star-rating" 
+                     (mouseleave)="onStarLeave()"
+                     [class.disabled]="submittingRating">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <i 
+                      [class]="getStarClass(star)"
+                      (mouseenter)="onStarHover(star)"
+                      (click)="onStarClick(star)"
+                      [style.cursor]="submittingRating ? 'not-allowed' : 'pointer'"
+                      style="font-size: 1.5rem; margin-right: 0.25rem;"></i>
+                  }
+                  @if (userRating) {
+                    <button 
+                      class="btn btn-sm btn-outline-danger ms-2"
+                      (click)="deleteRating()"
+                      [disabled]="submittingRating"
+                      title="Delete your rating">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  }
+                </div>
+                @if (submittingRating) {
+                  <small class="text-muted">Submitting...</small>
+                }
+              </div>
+            } @else if (!user) {
+              <small class="text-muted">
+                <a routerLink="/login" class="text-decoration-none">Login</a> to rate this product
+              </small>
+            }
+          </div>
+
           <!-- Quantity Available -->
           <div class="mb-3">
             <strong>Quantity Available:</strong> <span class="ms-2">{{ product.quantity }} kg</span>
@@ -147,93 +211,310 @@
             </div>
           }
 
-          <!-- Quantity Input and Actions -->
-          <div class="mb-4 mt-4">
-            <label for="quantity" class="form-label">
-              <strong>Order Quantity (kg):</strong>
-            </label>
-            <div class="input-group" style="max-width: 200px;">
-              <button 
-                class="btn btn-outline-secondary" 
-                type="button"
-                (click)="decreaseQuantity()"
-                [disabled]="orderQuantity <= 1 || product.quantity === 0">
-                <i class="fas fa-minus"></i>
-              </button>
-              <input
-                type="number"
-                class="form-control text-center"
-                id="quantity"
-                [(ngModel)]="orderQuantity"
-                min="1"
-                [max]="product.quantity"
-                (change)="updateQuantity($event)"
-                [disabled]="product.quantity === 0"
-              />
-              <button 
-                class="btn btn-outline-secondary" 
-                type="button"
-                (click)="increaseQuantity()"
-                [disabled]="orderQuantity >= product.quantity || product.quantity === 0">
-                <i class="fas fa-plus"></i>
-              </button>
-            </div>
-            <small class="text-muted">
-              @if (product.quantity > 0) {
-                Maximum {{ product.quantity }} kg available
-              } @else {
-                <span class="text-danger">Out of Stock</span>
-              }
-            </small>
-          </div>
-
-          <!-- Action Buttons - Only show for consumers, not farmers -->
-          @if (!isFarmer) {
-            <div class="d-flex flex-row gap-2 mb-3">
-              <button 
-                class="btn btn-success btn-lg flex-fill action-btn"
-                (click)="addToCart()"
-                [disabled]="addingToCart || product.quantity === 0 || orderQuantity <= 0">
-                @if (addingToCart) {
-                  <i class="fas fa-check"></i>
-                  <span class="btn-text">Added to Cart</span>
+          <!-- Quantity Input and Actions - Only show if user is not the product owner -->
+          @if (!isProductOwner()) {
+            <div class="mb-4 mt-4">
+              <label for="quantity" class="form-label">
+                <strong>Order Quantity (kg):</strong>
+              </label>
+              <div class="input-group" style="max-width: 200px;">
+                <button 
+                  class="btn btn-outline-secondary" 
+                  type="button"
+                  (click)="decreaseQuantity()"
+                  [disabled]="orderQuantity <= 1 || product.quantity === 0">
+                  <i class="fas fa-minus"></i>
+                </button>
+                <input
+                  type="number"
+                  class="form-control text-center"
+                  id="quantity"
+                  [(ngModel)]="orderQuantity"
+                  min="1"
+                  [max]="product.quantity"
+                  (change)="updateQuantity($event)"
+                  [disabled]="product.quantity === 0"
+                />
+                <button 
+                  class="btn btn-outline-secondary" 
+                  type="button"
+                  (click)="increaseQuantity()"
+                  [disabled]="orderQuantity >= product.quantity || product.quantity === 0">
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>
+              <small class="text-muted">
+                @if (product.quantity > 0) {
+                  Maximum {{ product.quantity }} kg available
                 } @else {
-                  <i class="fas fa-cart-plus"></i>
-                  <span class="btn-text">Add to Cart</span>
+                  <span class="text-danger">Out of Stock</span>
                 }
-              </button>
-              
-              <button 
-                class="btn btn-success btn-lg flex-fill action-btn"
-                (click)="placeOrder()"
-                [disabled]="placingOrder || product.quantity === 0 || orderQuantity <= 0">
-                @if (placingOrder) {
-                  <span class="spinner-border spinner-border-sm" role="status"></span>
-                  <span class="btn-text">Processing...</span>
-                } @else {
-                  <i class="fas fa-shopping-bag"></i>
-                  <span class="btn-text">Place Order</span>
-                }
-              </button>
+              </small>
             </div>
 
+            <!-- Action Buttons - Only show for consumers, not product owners -->
+            @if (!isFarmer) {
+              <div class="d-flex flex-row gap-2 mb-3">
+                <button 
+                  class="btn btn-success btn-lg flex-fill action-btn"
+                  (click)="addToCart()"
+                  [disabled]="addingToCart || product.quantity === 0 || orderQuantity <= 0">
+                  @if (addingToCart) {
+                    <i class="fas fa-check"></i>
+                    <span class="btn-text">Added to Cart</span>
+                  } @else {
+                    <i class="fas fa-cart-plus"></i>
+                    <span class="btn-text">Add to Cart</span>
+                  }
+                </button>
+                
+                <button 
+                  class="btn btn-success btn-lg flex-fill action-btn"
+                  (click)="placeOrder()"
+                  [disabled]="placingOrder || product.quantity === 0 || orderQuantity <= 0">
+                  @if (placingOrder) {
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    <span class="btn-text">Processing...</span>
+                  } @else {
+                    <i class="fas fa-shopping-bag"></i>
+                    <span class="btn-text">Place Order</span>
+                  }
+                </button>
+              </div>
+            }
           } @else {
-            <!-- Farmer View - Show info message instead -->
-            <div class="alert alert-success">
-              <i class="fas fa-info-circle"></i> You are viewing this product as a seller. To purchase products, please login as a consumer.
+            <!-- Product Owner View - Show info message -->
+            <div class="alert alert-info mb-3">
+              <i class="fas fa-info-circle"></i> You are viewing your own product. You can manage it from your dashboard and reply to customer comments below.
             </div>
           }
         </div>
       </div>
     </div>
     
-    <!-- Floating Cart Button -->
-    <button 
-      class="floating-cart-btn"
-      (click)="viewCart()"
-      title="View Cart">
-      <i class="fas fa-shopping-cart"></i>
-    </button>
+    <!-- Floating Cart Button - Only show if user is not the product owner -->
+    @if (!isProductOwner()) {
+      <button 
+        class="floating-cart-btn"
+        (click)="viewCart()"
+        title="View Cart">
+        <i class="fas fa-shopping-cart"></i>
+      </button>
+    }
+
+    <!-- Comments Section -->
+    <div class="row mt-5 comments-section">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-white">
+            <h4 class="mb-0">
+              <i class="fas fa-comments me-2"></i>
+              Comments
+              @if (comments.length > 0) {
+                <span class="badge bg-secondary ms-2">{{ comments.length }}</span>
+              }
+            </h4>
+          </div>
+          <div class="card-body">
+            <!-- Add Comment Form -->
+            <div class="mb-4">
+              <label for="newComment" class="form-label">Add a Comment</label>
+              <textarea
+                class="form-control"
+                id="newComment"
+                rows="3"
+                placeholder="Write your comment here..."
+                [(ngModel)]="newCommentText"
+                [disabled]="addingComment"
+                maxlength="1000"></textarea>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <small class="text-muted">{{ newCommentText.length }}/1000 characters</small>
+                <button
+                  class="btn btn-success"
+                  (click)="addComment()"
+                  [disabled]="addingComment || !newCommentText.trim()">
+                  @if (addingComment) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    Posting...
+                  } @else {
+                    <i class="fas fa-paper-plane me-2"></i>
+                    Post Comment
+                  }
+                </button>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Comments List -->
+            @if (loadingComments) {
+              <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status">
+                  <span class="visually-hidden">Loading comments...</span>
+                </div>
+                <p class="mt-2 text-muted">Loading comments...</p>
+              </div>
+            } @else if (comments.length === 0) {
+              <div class="text-center py-4 text-muted">
+                <i class="fas fa-comment-slash fa-3x mb-3"></i>
+                <p>No comments yet. Be the first to comment!</p>
+              </div>
+            } @else {
+              <div class="comments-list">
+                @for (comment of comments; track comment._id) {
+                  <div class="comment-item mb-4 pb-3 border-bottom">
+                    @if (editingCommentId === comment._id) {
+                      <!-- Edit Mode -->
+                      <div class="edit-comment-form">
+                        <textarea
+                          class="form-control mb-2"
+                          rows="3"
+                          [(ngModel)]="editingCommentText"
+                          maxlength="1000"></textarea>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <small class="text-muted">{{ editingCommentText.length }}/1000 characters</small>
+                          <div>
+                            <button
+                              class="btn btn-sm btn-secondary me-2"
+                              (click)="cancelEditingComment()">
+                              Cancel
+                            </button>
+                            <button
+                              class="btn btn-sm btn-success"
+                              (click)="updateComment(comment._id)">
+                              <i class="fas fa-check me-1"></i>
+                              Save
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    } @else {
+                      <!-- View Mode -->
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                          <div class="d-flex align-items-center mb-2">
+                            <strong class="me-2">{{ comment.userName }}</strong>
+                            @if (isProductOwner() && comment.userId !== product?.farmerId) {
+                              <span class="badge bg-info ms-2">Customer</span>
+                            }
+                            <small class="text-muted ms-2">{{ formatDate(comment.createdAt) }}</small>
+                            @if (comment.createdAt !== comment.updatedAt) {
+                              <small class="text-muted ms-2">(edited)</small>
+                            }
+                          </div>
+                          <p class="mb-0 text-break">{{ comment.text }}</p>
+                          
+                          <!-- Reply Button - Show for any logged-in user -->
+                          @if (user) {
+                            <div class="mt-2">
+                              @if (replyingToCommentId === comment._id) {
+                                <!-- Reply Form -->
+                                <div class="reply-form mt-2 p-3 bg-light rounded">
+                                  <textarea
+                                    class="form-control mb-2"
+                                    rows="2"
+                                    placeholder="Write your reply..."
+                                    [(ngModel)]="replyText"
+                                    maxlength="1000"></textarea>
+                                  <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ replyText.length }}/1000 characters</small>
+                                    <div>
+                                      <button
+                                        class="btn btn-sm btn-secondary me-2"
+                                        (click)="cancelReply()">
+                                        Cancel
+                                      </button>
+                                      <button
+                                        class="btn btn-sm btn-success"
+                                        (click)="addReply(comment._id)"
+                                        [disabled]="addingReply || !replyText.trim()">
+                                        @if (addingReply) {
+                                          <span class="spinner-border spinner-border-sm me-1"></span>
+                                        }
+                                        <i class="fas fa-paper-plane me-1"></i>
+                                        Reply
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              } @else {
+                                <button
+                                  class="btn btn-sm btn-outline-secondary mt-2"
+                                  (click)="startReplying(comment._id)">
+                                  <i class="fas fa-reply me-1"></i>
+                                  Reply
+                                </button>
+                              }
+                            </div>
+                          }
+                        </div>
+                        @if (isCommentOwner(comment) || user?.role === 'admin') {
+                          <div class="comment-actions ms-3">
+                            <button
+                              class="btn btn-sm btn-outline-primary me-1"
+                              (click)="startEditingComment(comment)"
+                              title="Edit comment">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button
+                              class="btn btn-sm btn-outline-danger"
+                              (click)="deleteComment(comment._id)"
+                              title="Delete comment">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                          </div>
+                        }
+                      </div>
+                      
+                      <!-- Replies Section -->
+                      @if (comment.replies && comment.replies.length > 0) {
+                        <div class="replies-container mt-3 ms-4 ps-3 border-start border-2">
+                          @for (reply of comment.replies; track reply._id) {
+                            <div class="reply-item mb-3 pb-2">
+                              <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                  <div class="d-flex align-items-center mb-1">
+                                    <strong class="me-2 small">{{ reply.userName }}</strong>
+                                    @if (isProductOwner() && reply.userId === product?.farmerId) {
+                                      <span class="badge bg-success ms-2 small">Farmer</span>
+                                    }
+                                    <small class="text-muted ms-2">{{ formatDate(reply.createdAt) }}</small>
+                                    @if (reply.createdAt !== reply.updatedAt) {
+                                      <small class="text-muted ms-2">(edited)</small>
+                                    }
+                                  </div>
+                                  <p class="mb-0 small text-break">{{ reply.text }}</p>
+                                </div>
+                                @if (isCommentOwner(reply) || user?.role === 'admin') {
+                                  <div class="comment-actions ms-2">
+                                    <button
+                                      class="btn btn-sm btn-outline-primary me-1"
+                                      (click)="startEditingComment(reply)"
+                                      title="Edit reply">
+                                      <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button
+                                      class="btn btn-sm btn-outline-danger"
+                                      (click)="deleteComment(reply._id)"
+                                      title="Delete reply">
+                                      <i class="fas fa-trash"></i>
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 } @else {
   <div class="container my-4">

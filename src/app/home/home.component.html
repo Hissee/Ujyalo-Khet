@@ -80,6 +80,18 @@
                             <h5 class="product-name">{{ product.name }}</h5>
                             <p class="product-description">{{ product.description || 'Fresh from the farm' }}</p>
                             
+                            <!-- Rating Display -->
+                            @if (product.averageRating && product.averageRating > 0) {
+                              <div class="product-rating mb-2">
+                                <div class="d-flex align-items-center">
+                                  <i class="fas fa-star text-warning" style="font-size: 0.85rem;"></i>
+                                  <span class="ms-1" style="font-size: 0.9rem; font-weight: 500;">{{ product.averageRating.toFixed(1) }}</span>
+                                  @if (product.totalRatings) {
+                                    <span class="ms-1 text-muted" style="font-size: 0.75rem;">({{ product.totalRatings }})</span>
+                                  }
+                                </div>
+                              </div>
+                            }
                             <div class="product-details">
                               <div class="product-price">
                                 <span class="price-label">Price:</span>

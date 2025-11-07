@@ -102,6 +102,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
         return 'fa-truck';
       case 'order_payment_completed':
         return 'fa-credit-card';
+      case 'product_comment':
+        return 'fa-comment';
+      case 'comment_reply':
+        return 'fa-reply';
       default:
         return 'fa-bell';
     }
@@ -121,6 +125,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
         return 'text-success';
       case 'order_payment_completed':
         return 'text-success';
+      case 'product_comment':
+        return 'text-info';
+      case 'comment_reply':
+        return 'text-primary';
       default:
         return 'text-secondary';
     }
@@ -144,6 +152,24 @@ export class NotificationComponent implements OnInit, OnDestroy {
   navigateToOrder(orderId?: string): void {
     if (orderId) {
       this.router.navigate(['/orders', orderId]);
+    }
+  }
+
+  handleNotificationClick(notification: Notification): void {
+    // Mark as read
+    this.markAsRead(notification);
+
+    // Navigate based on notification type
+    if (notification.type === 'product_comment' || notification.type === 'comment_reply') {
+      // Navigate to product detail page with scroll to comments
+      if (notification.orderId) { // orderId is used to store productId for comment notifications
+        this.router.navigate(['/view-product', notification.orderId], {
+          queryParams: { scrollToComments: 'true' }
+        });
+      }
+    } else if (notification.orderId && (notification.type.startsWith('order_') || notification.type === 'order_status_updated')) {
+      // Navigate to order detail page
+      this.navigateToOrder(notification.orderId);
     }
   }
 

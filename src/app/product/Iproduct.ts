@@ -13,5 +13,7 @@ export interface IProduct{
     description: string;
     harvestDate: string;
     organic: boolean;
+    averageRating?: number; // Average rating (1-5)
+    totalRatings?: number; // Total number of ratings
 }
 

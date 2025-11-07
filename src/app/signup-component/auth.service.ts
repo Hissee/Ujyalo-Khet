@@ -165,7 +165,9 @@ export class AuthService {
         phone: new FormControl('', [Validators.required, this.phoneValidator]),
         email: new FormControl('', [Validators.required, this.emailValidator]),
         province: new FormControl('', [Validators.required]),
-        city: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]),
+        district: new FormControl('', [Validators.required]),
+        municipality: new FormControl('', [Validators.required]),
+        ward: new FormControl('', [Validators.required]),
         street: new FormControl('', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]),
         password: new FormControl('', [Validators.required, this.strongPasswordValidator]),
         confirmPassword: new FormControl('', Validators.required)

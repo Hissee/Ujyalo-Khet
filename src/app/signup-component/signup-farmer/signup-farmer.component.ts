@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { ToastService } from '../../services/toast.service';
+import { LocationService, Province, District, Municipality, Ward } from '../../services/location.service';
 
 @Component({
   selector: 'app-signup-farmer',
@@ -11,11 +12,12 @@ import { ToastService } from '../../services/toast.service';
   templateUrl: './signup-farmer.component.html',
   styleUrl: './signup-farmer.component.css'
 })
-export class SignupFarmerComponent {
+export class SignupFarmerComponent implements OnInit {
   signupForm: FormGroup;
   authService = inject(AuthService);
   router = inject(Router);
   toastService = inject(ToastService);
+  locationService = inject(LocationService);
   successMessage = '';
   errorMessage = '';
   loading = false;
@@ -27,9 +29,15 @@ export class SignupFarmerComponent {
   showPassword = false;
   showConfirmPassword = false;
 
-  provinces: string[] = [
-    'Gandaki', 'Bagmati', 'Madesh', 'Lumbini', 'Karnali', 'Koshi', 'Sudurpaschim'
-  ];
+  // Location data
+  provinces: Province[] = [];
+  districts: District[] = [];
+  municipalities: Municipality[] = [];
+  wards: Ward[] = [];
+  loadingProvinces = false;
+  loadingDistricts = false;
+  loadingMunicipalities = false;
+  loadingWards = false;
 
   constructor(private fb: FormBuilder) {
     this.signupForm = this.fb.group({
@@ -39,7 +47,9 @@ export class SignupFarmerComponent {
       phone: ['', [Validators.required, this.phoneValidator]],
       email: ['', [Validators.required, this.emailValidator]],
       province: ['', Validators.required],
-      city: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      district: ['', Validators.required],
+      municipality: ['', Validators.required],
+      ward: ['', Validators.required],
       street: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(200)]],
       password: ['', [Validators.required, this.strongPasswordValidator]],
       confirmPassword: ['', Validators.required]
@@ -47,6 +57,115 @@ export class SignupFarmerComponent {
     
     this.otpForm = this.fb.group({
       otp: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]]
+    });
+
+    // Watch for province changes to load districts
+    this.signupForm.get('province')?.valueChanges.subscribe(provinceId => {
+      if (provinceId) {
+        this.onProvinceChange(provinceId);
+      } else {
+        this.districts = [];
+        this.municipalities = [];
+        this.wards = [];
+        this.signupForm.patchValue({ district: '', municipality: '', ward: '' }, { emitEvent: false });
+      }
+    });
+
+    // Watch for district changes to load municipalities
+    this.signupForm.get('district')?.valueChanges.subscribe(districtId => {
+      if (districtId) {
+        this.onDistrictChange(districtId);
+      } else {
+        this.municipalities = [];
+        this.wards = [];
+        this.signupForm.patchValue({ municipality: '', ward: '' }, { emitEvent: false });
+      }
+    });
+
+    // Watch for municipality changes to load wards
+    this.signupForm.get('municipality')?.valueChanges.subscribe(municipalityId => {
+      if (municipalityId) {
+        this.onMunicipalityChange(municipalityId);
+      } else {
+        this.wards = [];
+        this.signupForm.patchValue({ ward: '' }, { emitEvent: false });
+      }
+    });
+  }
+
+  ngOnInit() {
+    this.loadProvinces();
+  }
+
+  loadProvinces() {
+    this.loadingProvinces = true;
+    this.locationService.getProvinces().subscribe({
+      next: (provinces) => {
+        this.provinces = provinces;
+        this.loadingProvinces = false;
+      },
+      error: (err) => {
+        console.error('Error loading provinces:', err);
+        this.toastService.error('Failed to load provinces. Please refresh the page.');
+        this.loadingProvinces = false;
+      }
+    });
+  }
+
+  onProvinceChange(provinceId: number) {
+    this.loadingDistricts = true;
+    this.districts = [];
+    this.municipalities = [];
+    this.wards = [];
+    this.signupForm.patchValue({ district: '', municipality: '', ward: '' }, { emitEvent: false });
+
+    this.locationService.getDistrictsByProvince(provinceId).subscribe({
+      next: (districts) => {
+        this.districts = districts;
+        this.loadingDistricts = false;
+      },
+      error: (err) => {
+        console.error('Error loading districts:', err);
+        this.toastService.error('Failed to load districts.');
+        this.loadingDistricts = false;
+      }
+    });
+  }
+
+  onDistrictChange(districtId: number) {
+    this.loadingMunicipalities = true;
+    this.municipalities = [];
+    this.wards = [];
+    this.signupForm.patchValue({ municipality: '', ward: '' }, { emitEvent: false });
+
+    this.locationService.getMunicipalitiesByDistrict(districtId).subscribe({
+      next: (municipalities) => {
+        this.municipalities = municipalities;
+        this.loadingMunicipalities = false;
+      },
+      error: (err) => {
+        console.error('Error loading municipalities:', err);
+        // Note: Municipality data might not be fully implemented yet
+        this.loadingMunicipalities = false;
+      }
+    });
+  }
+
+  onMunicipalityChange(municipalityId: number) {
+    this.loadingWards = true;
+    this.wards = [];
+    this.signupForm.patchValue({ ward: '' }, { emitEvent: false });
+
+    this.locationService.getWardsByMunicipality(municipalityId).subscribe({
+      next: (wards) => {
+        this.wards = wards;
+        this.loadingWards = false;
+      },
+      error: (err) => {
+        console.error('Error loading wards:', err);
+        // Note: Ward data might not be fully implemented yet
+        this.loadingWards = false;
+      }
     });
   }
 
@@ -164,16 +283,29 @@ export class SignupFarmerComponent {
     this.successMessage = '';
     this.errorMessage = '';
 
+    // Get selected location names - convert form values to numbers for comparison
+    const provinceId = Number(this.signupForm.get('province')?.value);
+    const districtId = Number(this.signupForm.get('district')?.value);
+    const municipalityId = Number(this.signupForm.get('municipality')?.value);
+    const wardId = Number(this.signupForm.get('ward')?.value);
+    
+    const selectedProvince = this.provinces.find(p => p.id === provinceId);
+    const selectedDistrict = this.districts.find(d => d.id === districtId);
+    const selectedMunicipality = this.municipalities.find(m => m.id === municipalityId);
+    const selectedWard = this.wards.find(w => w.id === wardId);
+
     const farmerData = {
-      firstName: this.signupForm.get('firstName')?.value,
-      middleName: this.signupForm.get('middleName')?.value || '',
-      lastName: this.signupForm.get('lastName')?.value,
-      email: this.signupForm.get('email')?.value,
-      phone: this.signupForm.get('phone')?.value,
-      province: this.signupForm.get('province')?.value,
-      city: this.signupForm.get('city')?.value,
-      street: this.signupForm.get('street')?.value,
-      password: this.signupForm.get('password')?.value,
+      firstName: this.signupForm.get('firstName')?.value?.trim() || '',
+      middleName: this.signupForm.get('middleName')?.value?.trim() || '',
+      lastName: this.signupForm.get('lastName')?.value?.trim() || '',
+      email: this.signupForm.get('email')?.value?.trim() || '',
+      phone: this.signupForm.get('phone')?.value?.trim() || '',
+      province: selectedProvince?.name || '',
+      district: selectedDistrict?.name || '',
+      municipality: selectedMunicipality?.name || '',
+      ward: selectedWard?.name || '',
+      street: this.signupForm.get('street')?.value?.trim() || '',
+      password: this.signupForm.get('password')?.value || '',
     };
 
     this.loading = true;

@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import {FormGroup, FormBuilder, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { ToastService } from '../../services/toast.service';
+import { LocationService, Province, District, Municipality, Ward } from '../../services/location.service';
 
 @Component({
   selector: 'app-signup-consumer',
@@ -20,12 +21,20 @@ import { ToastService } from '../../services/toast.service';
 export class SignupConsumerComponent implements OnInit, OnDestroy {
   userForm: FormGroup = new FormGroup({});
 
-  provinces: string[] = [
-    'Gandaki', 'Bagmati', 'Madesh', 'Lumbini', 'Karnali', 'Koshi', 'Sudurpaschim'
-  ];
+  // Location data
+  provinces: Province[] = [];
+  districts: District[] = [];
+  municipalities: Municipality[] = [];
+  wards: Ward[] = [];
+  loadingProvinces = false;
+  loadingDistricts = false;
+  loadingMunicipalities = false;
+  loadingWards = false;
+
   service = inject(AuthService);
   router = inject(Router);
   toastService = inject(ToastService);
+  locationService = inject(LocationService);
   loading = false;
 
 
@@ -37,7 +46,9 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
     email: '',
     phone: '',
     province: '',
-    city: '',
+    district: '',
+    municipality: '',
+    ward: '',
     street: '',
     password: '',
     role: 'consumer'
@@ -46,6 +57,113 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.initForm();
     this.initOTPForm();
+    this.loadProvinces();
+    this.setupLocationWatchers();
+  }
+
+  loadProvinces() {
+    this.loadingProvinces = true;
+    this.locationService.getProvinces().subscribe({
+      next: (provinces) => {
+        this.provinces = provinces;
+        this.loadingProvinces = false;
+      },
+      error: (err) => {
+        console.error('Error loading provinces:', err);
+        this.toastService.error('Failed to load provinces. Please refresh the page.');
+        this.loadingProvinces = false;
+      }
+    });
+  }
+
+  setupLocationWatchers() {
+    // Watch for province changes to load districts
+    this.userForm.get('province')?.valueChanges.subscribe(provinceId => {
+      if (provinceId) {
+        this.onProvinceChange(provinceId);
+      } else {
+        this.districts = [];
+        this.municipalities = [];
+        this.wards = [];
+        this.userForm.patchValue({ district: '', municipality: '', ward: '' }, { emitEvent: false });
+      }
+    });
+
+    // Watch for district changes to load municipalities
+    this.userForm.get('district')?.valueChanges.subscribe(districtId => {
+      if (districtId) {
+        this.onDistrictChange(districtId);
+      } else {
+        this.municipalities = [];
+        this.wards = [];
+        this.userForm.patchValue({ municipality: '', ward: '' }, { emitEvent: false });
+      }
+    });
+
+    // Watch for municipality changes to load wards
+    this.userForm.get('municipality')?.valueChanges.subscribe(municipalityId => {
+      if (municipalityId) {
+        this.onMunicipalityChange(municipalityId);
+      } else {
+        this.wards = [];
+        this.userForm.patchValue({ ward: '' }, { emitEvent: false });
+      }
+    });
+  }
+
+  onProvinceChange(provinceId: number) {
+    this.loadingDistricts = true;
+    this.districts = [];
+    this.municipalities = [];
+    this.wards = [];
+    this.userForm.patchValue({ district: '', municipality: '', ward: '' }, { emitEvent: false });
+
+    this.locationService.getDistrictsByProvince(provinceId).subscribe({
+      next: (districts) => {
+        this.districts = districts;
+        this.loadingDistricts = false;
+      },
+      error: (err) => {
+        console.error('Error loading districts:', err);
+        this.toastService.error('Failed to load districts.');
+        this.loadingDistricts = false;
+      }
+    });
+  }
+
+  onDistrictChange(districtId: number) {
+    this.loadingMunicipalities = true;
+    this.municipalities = [];
+    this.wards = [];
+    this.userForm.patchValue({ municipality: '', ward: '' }, { emitEvent: false });
+
+    this.locationService.getMunicipalitiesByDistrict(districtId).subscribe({
+      next: (municipalities) => {
+        this.municipalities = municipalities;
+        this.loadingMunicipalities = false;
+      },
+      error: (err) => {
+        console.error('Error loading municipalities:', err);
+        this.loadingMunicipalities = false;
+      }
+    });
+  }
+
+  onMunicipalityChange(municipalityId: number) {
+    this.loadingWards = true;
+    this.wards = [];
+    this.userForm.patchValue({ ward: '' }, { emitEvent: false });
+
+    this.locationService.getWardsByMunicipality(municipalityId).subscribe({
+      next: (wards) => {
+        this.wards = wards;
+        this.loadingWards = false;
+      },
+      error: (err) => {
+        console.error('Error loading wards:', err);
+        this.loadingWards = false;
+      }
+    });
   }
 
   private initOTPForm() {
@@ -88,16 +206,29 @@ export class SignupConsumerComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     this.errorMessage = '';
     
+    // Get selected location names - convert form values to numbers for comparison
+    const provinceId = Number(this.userForm.get('province')?.value);
+    const districtId = Number(this.userForm.get('district')?.value);
+    const municipalityId = Number(this.userForm.get('municipality')?.value);
+    const wardId = Number(this.userForm.get('ward')?.value);
+    
+    const selectedProvince = this.provinces.find(p => p.id === provinceId);
+    const selectedDistrict = this.districts.find(d => d.id === districtId);
+    const selectedMunicipality = this.municipalities.find(m => m.id === municipalityId);
+    const selectedWard = this.wards.find(w => w.id === wardId);
+
     const user = {
-      firstName: this.userForm.get('firstName')?.value,
-      middleName: this.userForm.get('middleName')?.value || '',
-      lastName: this.userForm.get('lastName')?.value,
-      email: this.userForm.get('email')?.value,
-      phone: this.userForm.get('phone')?.value,
-      province: this.userForm.get('province')?.value,
-      city: this.userForm.get('city')?.value,
-      street: this.userForm.get('street')?.value,
-      password: this.userForm.get('password')?.value,
+      firstName: this.userForm.get('firstName')?.value?.trim() || '',
+      middleName: this.userForm.get('middleName')?.value?.trim() || '',
+      lastName: this.userForm.get('lastName')?.value?.trim() || '',
+      email: this.userForm.get('email')?.value?.trim() || '',
+      phone: this.userForm.get('phone')?.value?.trim() || '',
+      province: selectedProvince?.name || '',
+      district: selectedDistrict?.name || '',
+      municipality: selectedMunicipality?.name || '',
+      ward: selectedWard?.name || '',
+      street: this.userForm.get('street')?.value?.trim() || '',
+      password: this.userForm.get('password')?.value || '',
     };
     
     console.log('Signup data:', user);

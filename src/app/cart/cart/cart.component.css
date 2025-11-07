@@ -35,8 +35,6 @@
 
 .input-group input[type="number"] {
   text-align: center !important;
-  /* Remove spinner arrows for Chrome, Safari, Edge */
-  -moz-appearance: textfield;
 }
 
 /* Remove spinner arrows for Chrome, Safari, Edge */

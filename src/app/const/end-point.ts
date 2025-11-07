@@ -60,4 +60,14 @@ export class Endpoint {
   public static readonly UPLOAD_MULTIPLE_IMAGES = Endpoint.API_BASE + Endpoint.API_VERSION + 'upload/multiple';
   public static readonly DELETE_IMAGE = (publicId: string) =>
     Endpoint.API_BASE + Endpoint.API_VERSION + `upload/${publicId}`;
+
+  // Locations (Nepal Administrative Divisions)
+  public static readonly GET_PROVINCES = Endpoint.API_BASE + Endpoint.API_VERSION + 'locations/provinces';
+  public static readonly GET_DISTRICTS_BY_PROVINCE = (provinceId: number) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `locations/provinces/${provinceId}/districts`;
+  public static readonly GET_MUNICIPALITIES_BY_DISTRICT = (districtId: number) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `locations/districts/${districtId}/municipalities`;
+  public static readonly GET_WARDS_BY_MUNICIPALITY = (municipalityId: number) =>
+    Endpoint.API_BASE + Endpoint.API_VERSION + `locations/municipalities/${municipalityId}/wards`;
+  public static readonly GET_ALL_LOCATIONS = Endpoint.API_BASE + Endpoint.API_VERSION + 'locations/all';
 }

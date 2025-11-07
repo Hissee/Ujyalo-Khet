@@ -102,13 +102,17 @@
         }
       </div>
 
-      <!-- Address -->
+      <!-- Address - Location Selection -->
       <div class="mb-3">
         <label for="province" class="form-label">Province</label>
-        <select class="form-select" id="province" formControlName="province" required>
+        <select class="form-select" id="province" formControlName="province" required [disabled]="loadingProvinces">
           <option value="">Select Province</option>
-          @for (province of provinces; track province) {
-            <option [value]="province">{{ province }}</option>
+          @if (loadingProvinces) {
+            <option disabled>Loading provinces...</option>
+          } @else {
+            @for (province of provinces; track province.id) {
+              <option [value]="province.id">{{ province.name }}</option>
+            }
           }
         </select>
         @if (userForm.get('province')?.invalid && userForm.get('province')?.touched) {
@@ -117,24 +121,75 @@
       </div>
 
       <div class="mb-3">
-        <label for="city" class="form-label">City</label>
-        <input type="text" class="form-control" id="city" formControlName="city" placeholder="City" required>
-        @if (userForm.get('city')?.invalid && userForm.get('city')?.touched) {
-          <small class="text-danger">
-            @if (userForm.get('city')?.errors?.['required']) {
-              City is required
-            } @else if (userForm.get('city')?.errors?.['minlength']) {
-              City must be at least 2 characters
-            } @else if (userForm.get('city')?.errors?.['maxlength']) {
-              City must not exceed 50 characters
+        <label for="district" class="form-label">District</label>
+        <select class="form-select" id="district" formControlName="district" required [disabled]="!userForm.get('province')?.value || loadingDistricts">
+          <option value="">Select District</option>
+          @if (loadingDistricts) {
+            <option disabled>Loading districts...</option>
+          } @else if (!userForm.get('province')?.value) {
+            <option disabled>Please select a province first</option>
+          } @else {
+            @for (district of districts; track district.id) {
+              <option [value]="district.id">{{ district.name }}</option>
             }
-          </small>
+          }
+        </select>
+        @if (userForm.get('district')?.invalid && userForm.get('district')?.touched) {
+          <small class="text-danger">District is required</small>
         }
       </div>
 
       <div class="mb-3">
-        <label for="street" class="form-label">Street Address</label>
-        <input type="text" class="form-control" id="street" formControlName="street" placeholder="Street address" required>
+        <label for="municipality" class="form-label">Municipality</label>
+        <select class="form-select" id="municipality" formControlName="municipality" required [disabled]="!userForm.get('district')?.value || loadingMunicipalities">
+          <option value="">Select Municipality</option>
+          @if (loadingMunicipalities) {
+            <option disabled>Loading municipalities...</option>
+          } @else if (!userForm.get('district')?.value) {
+            <option disabled>Please select a district first</option>
+          } @else if (municipalities.length === 0) {
+            <option disabled>Municipality data not available. Please enter manually in street address.</option>
+          } @else {
+            @for (municipality of municipalities; track municipality.id) {
+              <option [value]="municipality.id">{{ municipality.name }}</option>
+            }
+          }
+        </select>
+        @if (userForm.get('municipality')?.invalid && userForm.get('municipality')?.touched) {
+          <small class="text-danger">Municipality is required</small>
+        }
+        @if (municipalities.length === 0 && userForm.get('district')?.value && !loadingMunicipalities) {
+          <small class="text-muted">Municipality data is being loaded. You can proceed with district selection.</small>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="ward" class="form-label">Ward</label>
+        <select class="form-select" id="ward" formControlName="ward" required [disabled]="!userForm.get('municipality')?.value || loadingWards">
+          <option value="">Select Ward</option>
+          @if (loadingWards) {
+            <option disabled>Loading wards...</option>
+          } @else if (!userForm.get('municipality')?.value) {
+            <option disabled>Please select a municipality first</option>
+          } @else if (wards.length === 0) {
+            <option disabled>Ward data not available. Please enter ward number in street address.</option>
+          } @else {
+            @for (ward of wards; track ward.id) {
+              <option [value]="ward.id">{{ ward.name }}</option>
+            }
+          }
+        </select>
+        @if (userForm.get('ward')?.invalid && userForm.get('ward')?.touched) {
+          <small class="text-danger">Ward is required</small>
+        }
+        @if (wards.length === 0 && userForm.get('municipality')?.value && !loadingWards) {
+          <small class="text-muted">Ward data is being loaded. You can enter ward number in street address.</small>
+        }
+      </div>
+
+      <div class="mb-3">
+        <label for="street" class="form-label">Street Address / Tole</label>
+        <input type="text" class="form-control" id="street" formControlName="street" placeholder="Enter street address, tole, or area name" required>
         @if (userForm.get('street')?.invalid && userForm.get('street')?.touched) {
           <small class="text-danger">
             @if (userForm.get('street')?.errors?.['required']) {
@@ -146,6 +201,7 @@
             }
           </small>
         }
+        <small class="text-muted">Enter your detailed street address, tole, or area name</small>
       </div>
 
       <!-- Password -->

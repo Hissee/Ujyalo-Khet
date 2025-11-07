@@ -394,7 +394,7 @@
                         <div class="flex-grow-1">
                           <div class="d-flex align-items-center mb-2">
                             <strong class="me-2">{{ comment.userName }}</strong>
-                            @if (isProductOwner() && comment.userId !== product?.farmerId) {
+                            @if (isProductOwner() && comment.userId !== product.farmerId) {
                               <span class="badge bg-info ms-2">Customer</span>
                             }
                             <small class="text-muted ms-2">{{ formatDate(comment.createdAt) }}</small>
@@ -475,7 +475,7 @@
                                 <div class="flex-grow-1">
                                   <div class="d-flex align-items-center mb-1">
                                     <strong class="me-2 small">{{ reply.userName }}</strong>
-                                    @if (isProductOwner() && reply.userId === product?.farmerId) {
+                                    @if (isProductOwner() && reply.userId === product.farmerId) {
                                       <span class="badge bg-success ms-2 small">Farmer</span>
                                     }
                                     <small class="text-muted ms-2">{{ formatDate(reply.createdAt) }}</small>

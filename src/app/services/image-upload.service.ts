@@ -75,6 +75,11 @@ export class ImageUploadService {
       }),
       catchError(err => {
         console.error('Cloudinary upload error:', err);
+        // Log the full error response for debugging
+        if (err.error) {
+          console.error('Error response body:', err.error);
+          console.error('Error message:', err.error.message || err.error.error);
+        }
         throw err;
       })
     );

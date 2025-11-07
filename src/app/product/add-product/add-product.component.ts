@@ -253,8 +253,12 @@ export class AddProductComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error uploading images to Cloudinary:', err);
+        // Extract error message from backend response
+        const errorMessage = err.error?.error || err.error?.message || 'Failed to upload images. Please try again.';
+        console.error('Backend error message:', errorMessage);
         this.uploadingImages = false;
-        this.imageError = 'Failed to upload images. Please try again.';
+        this.imageError = errorMessage;
+        this.toastService.error(errorMessage);
       }
     });
   }

@@ -7,6 +7,7 @@ import { CartService } from '../cart.service';
 import { ICartItem } from '../Icart-item';
 import { ToastService } from '../../services/toast.service';
 import { ConfirmationDialogService } from '../../services/confirmation-dialog.service';
+import { OrderService, OrderRequest } from '../../services/order.service';
 import { environment } from '../../environment/environment';
 
 @Component({
@@ -28,7 +29,8 @@ export class CartComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private toastService: ToastService,
-    private confirmationDialog: ConfirmationDialogService
+    private confirmationDialog: ConfirmationDialogService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
@@ -99,21 +101,8 @@ export class CartComponent implements OnInit, OnDestroy {
             // Mark as processed to prevent duplicate execution
             this.paymentProcessed = true;
             
-            // Clear cart on successful payment with valid signature
-            this.cartService.clearCart();
-            
-            // Show success toast message with longer duration (5 seconds)
-            this.toastService.success('Payment successful! Your order has been placed.', 5000);
-            
-            // Use location.replace to update URL without navigation (preserves toast)
-            // This removes query parameters from URL without reinitializing component
-            const cleanUrl = window.location.origin + window.location.pathname;
-            window.history.replaceState({}, '', cleanUrl);
-            
-            // Reset flag after a delay
-            setTimeout(() => {
-              this.paymentProcessed = false;
-            }, 2000);
+            // Create order after successful payment (similar to COD checkout)
+            this.createOrderAfterEsewaPayment();
           } else if (response.status === 'COMPLETE' && !isValidSignature) {
             // Signature verification failed - don't clear cart
             this.toastService.error('Payment verification failed. Please contact support.');
@@ -133,19 +122,8 @@ export class CartComponent implements OnInit, OnDestroy {
         // Mark as processed to prevent duplicate execution
         this.paymentProcessed = true;
         
-        // Fallback for simple success parameter
-        this.cartService.clearCart();
-        // Show success toast message with longer duration (5 seconds)
-        this.toastService.success('Payment successful! Your order has been placed.', 5000);
-        
-        // Use location.replace to update URL without navigation (preserves toast)
-        const cleanUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, '', cleanUrl);
-        
-        // Reset flag after a delay
-        setTimeout(() => {
-          this.paymentProcessed = false;
-        }, 2000);
+        // Fallback for simple success parameter - create order
+        this.createOrderAfterEsewaPayment();
       } else if (params['status'] === 'failure' || params['status'] === 'CANCELED' || params['status'] === 'NOT_FOUND') {
         // Fallback for simple failure parameter
         this.toastService.error('Payment failed. Please try again.');
@@ -365,11 +343,173 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Create order after successful eSewa payment
+   * Similar to COD checkout - decreases quantities, sends notifications, updates farmer revenue
+   */
+  private createOrderAfterEsewaPayment(): void {
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.toastService.error('Please login to complete your order.');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 2000);
+      return;
+    }
+
+    // Get delivery address from localStorage (saved from previous checkout)
+    const savedAddress = localStorage.getItem('deliveryAddress');
+    if (!savedAddress) {
+      this.toastService.error('Delivery address not found. Please go to checkout and enter your delivery address first.');
+      setTimeout(() => {
+        this.router.navigate(['/checkout']);
+      }, 2000);
+      return;
+    }
+
+    let deliveryAddress;
+    try {
+      deliveryAddress = JSON.parse(savedAddress);
+    } catch (e) {
+      console.error('Error parsing delivery address:', e);
+      this.toastService.error('Invalid delivery address. Please update your address in checkout.');
+      setTimeout(() => {
+        this.router.navigate(['/checkout']);
+      }, 2000);
+      return;
+    }
+
+    // Validate delivery address has required fields
+    if (!deliveryAddress.province || !deliveryAddress.city || !deliveryAddress.street) {
+      this.toastService.error('Incomplete delivery address. Please update your address in checkout.');
+      setTimeout(() => {
+        this.router.navigate(['/checkout']);
+      }, 2000);
+      return;
+    }
+
+    // Get current cart items
+    const currentCartItems = this.cartService.getCartItems();
+    if (!currentCartItems || currentCartItems.length === 0) {
+      this.toastService.error('Cart is empty. Cannot create order.');
+      return;
+    }
+
+    // Validate product IDs
+    const invalidProducts = currentCartItems.filter(item => {
+      const productId = item.product._id || item.product.id;
+      return !productId || productId === 'undefined' || productId === 'null' || !this.isValidObjectId(productId);
+    });
+
+    if (invalidProducts.length > 0) {
+      const productNames = invalidProducts.map(item => item.product.name).join(', ');
+      this.toastService.error(`Invalid product IDs: ${productNames}. Please remove these items and try again.`);
+      return;
+    }
+
+    // Prepare order data
+    const orderData: OrderRequest = {
+      products: currentCartItems.map(item => {
+        const productId = item.product._id || String(item.product.id);
+        return {
+          productId: String(productId),
+          quantity: item.quantity
+        };
+      }),
+      deliveryAddress: {
+        province: deliveryAddress.province.trim(),
+        city: deliveryAddress.city.trim(),
+        street: deliveryAddress.street.trim(),
+        phone: deliveryAddress.phone?.trim() || ''
+      },
+      paymentMethod: 'esewa',
+      paymentStatus: 'completed'
+    };
+
+    console.log('Creating order after eSewa payment:', orderData);
+
+    // Create order
+    this.orderService.placeOrder(orderData).subscribe({
+      next: (response) => {
+        console.log('Order created successfully after eSewa payment:', response);
+        
+        // Clear cart after successful order creation
+        this.cartService.clearCart();
+        
+        // Show success message
+        const orderId = response.orderId || 'N/A';
+        this.toastService.success(`Payment successful! Order placed successfully. Order ID: ${orderId}`, 5000);
+        
+        // Clean URL
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+        
+        // Reset flag after a delay
+        setTimeout(() => {
+          this.paymentProcessed = false;
+        }, 2000);
+        
+        // Redirect to home after a short delay
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 3000);
+      },
+      error: (err) => {
+        console.error('Error creating order after eSewa payment:', err);
+        
+        // Don't clear cart if order creation fails
+        // Payment was successful but order creation failed - user should contact support
+        const errorMessage = err.error?.message || err.error?.error || 'Failed to create order. Please contact support with your payment transaction ID.';
+        this.toastService.error(`Payment successful but order creation failed: ${errorMessage}`, 8000);
+        
+        // Clean URL
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', cleanUrl);
+        
+        // Reset flag
+        setTimeout(() => {
+          this.paymentProcessed = false;
+        }, 2000);
+      }
+    });
+  }
+
+  /**
+   * Validate MongoDB ObjectId format (24 hex characters)
+   */
+  private isValidObjectId(id: string | number | undefined | null): boolean {
+    if (!id) return false;
+    const idStr = String(id);
+    // MongoDB ObjectId is 24 hex characters
+    return /^[0-9a-fA-F]{24}$/.test(idStr);
+  }
+
+  /**
    * Pay with eSewa - Creates and submits form to eSewa payment gateway
    */
   payWithEsewa(): void {
     if (this.cartItems.length === 0 || this.totalPrice <= 0) {
       this.toastService.warning('Your cart is empty!');
+      return;
+    }
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.toastService.error('Please login to proceed with payment.');
+      setTimeout(() => {
+        this.router.navigate(['/login']);
+      }, 2000);
+      return;
+    }
+
+    // Check if delivery address exists
+    const savedAddress = localStorage.getItem('deliveryAddress');
+    if (!savedAddress) {
+      this.toastService.error('Please enter your delivery address first. Redirecting to checkout...');
+      setTimeout(() => {
+        this.router.navigate(['/checkout']);
+      }, 2000);
       return;
     }
 

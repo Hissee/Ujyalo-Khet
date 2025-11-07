@@ -8,7 +8,6 @@ import { CartService } from '../../cart/cart.service';
 import { OrderService } from '../../services/order.service';
 import { ToastService } from '../../services/toast.service';
 import { CommentService, Comment } from '../../services/comment.service';
-import { RatingService, Rating, RatingStatistics } from '../../services/rating.service';
 
 @Component({
   selector: 'app-product-details',
@@ -47,21 +46,11 @@ export class ProductDetailsComponent implements OnInit, OnDestroy{
   replyText: string = '';
   addingReply: boolean = false;
   
-  // Ratings
-  ratings: Rating[] = [];
-  ratingStatistics: RatingStatistics | null = null;
-  loadingRatings: boolean = false;
-  userRating: Rating | null = null;
-  selectedRating: number = 0; // For star selection
-  hoveredRating: number = 0; // For hover effect
-  submittingRating: boolean = false;
-  
   service = inject(ProductService);
   cartService = inject(CartService);
   orderService = inject(OrderService);
   toastService = inject(ToastService);
   commentService = inject(CommentService);
-  ratingService = inject(RatingService);
   
   constructor(
     private route: ActivatedRoute,
@@ -91,8 +80,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy{
           this.initializeImages();
           this.startCarousel();
           this.loadComments(productId);
-          this.loadRatings(productId);
-          this.loadUserRating(productId);
           console.log('Product loaded:', this.product);
           
           // Check if we should scroll to comments (e.g., from notification)
@@ -552,138 +539,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy{
       hour: '2-digit',
       minute: '2-digit'
     });
-  }
-
-  // Rating methods
-  loadRatings(productId: string): void {
-    this.loadingRatings = true;
-    this.ratingService.getRatingsByProduct(productId).subscribe({
-      next: (response) => {
-        this.ratings = response.data || [];
-        this.ratingStatistics = response.statistics || null;
-        this.loadingRatings = false;
-        
-        // Update product with latest rating stats
-        if (this.product && this.ratingStatistics) {
-          this.product.averageRating = this.ratingStatistics.averageRating;
-          this.product.totalRatings = this.ratingStatistics.totalRatings;
-        }
-      },
-      error: (err) => {
-        console.error('Error loading ratings:', err);
-        this.loadingRatings = false;
-      }
-    });
-  }
-
-  loadUserRating(productId: string): void {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.ratingService.getUserRating(productId).subscribe({
-      next: (response) => {
-        this.userRating = response.data || null;
-        if (this.userRating) {
-          this.selectedRating = this.userRating.rating;
-        }
-      },
-      error: (err) => {
-        console.error('Error loading user rating:', err);
-      }
-    });
-  }
-
-  onStarHover(rating: number): void {
-    if (!this.userRating) {
-      this.hoveredRating = rating;
-    }
-  }
-
-  onStarLeave(): void {
-    this.hoveredRating = 0;
-  }
-
-  onStarClick(rating: number): void {
-    if (!this.product) return;
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      this.toastService.warning('Please login to rate products');
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 1500);
-      return;
-    }
-
-    // Don't allow product owner to rate their own product
-    if (this.isProductOwner()) {
-      this.toastService.warning('You cannot rate your own product');
-      return;
-    }
-
-    this.selectedRating = rating;
-    this.submitRating(rating);
-  }
-
-  submitRating(rating: number): void {
-    if (!this.product) return;
-
-    this.submittingRating = true;
-    const productId = this.product._id || this.product.id;
-
-    this.ratingService.addOrUpdateRating(String(productId), rating).subscribe({
-      next: (response) => {
-        this.submittingRating = false;
-        this.userRating = response.rating;
-        this.selectedRating = rating;
-        this.hoveredRating = 0;
-        this.toastService.success(this.userRating?._id ? 'Rating updated successfully' : 'Rating added successfully');
-        this.loadRatings(String(productId));
-      },
-      error: (err) => {
-        console.error('Error submitting rating:', err);
-        this.submittingRating = false;
-        this.toastService.error(err.error?.message || 'Failed to submit rating');
-      }
-    });
-  }
-
-  deleteRating(): void {
-    if (!this.userRating || !this.product) return;
-
-    if (!confirm('Are you sure you want to delete your rating?')) {
-      return;
-    }
-
-    this.ratingService.deleteRating(this.userRating._id).subscribe({
-      next: (response) => {
-        this.userRating = null;
-        this.selectedRating = 0;
-        this.toastService.success('Rating deleted successfully');
-        const productId = this.product!._id || this.product!.id;
-        this.loadRatings(String(productId));
-      },
-      error: (err) => {
-        console.error('Error deleting rating:', err);
-        this.toastService.error(err.error?.message || 'Failed to delete rating');
-      }
-    });
-  }
-
-  getStarClass(starNumber: number): string {
-    const rating = this.hoveredRating || this.selectedRating;
-    if (starNumber <= rating) {
-      return 'fas fa-star text-warning';
-    }
-    return 'far fa-star text-muted';
-  }
-
-  getAverageRating(): number {
-    return this.product?.averageRating || 0;
-  }
-
-  getTotalRatings(): number {
-    return this.product?.totalRatings || 0;
   }
 
   // Expose Math functions for template

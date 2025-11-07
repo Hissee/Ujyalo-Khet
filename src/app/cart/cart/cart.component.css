@@ -54,6 +54,29 @@
   border-color: #146c43;
 }
 
+/* Ensure cart page has minimum height to push footer down */
+:host {
+  display: block;
+  min-height: calc(100vh - 300px); /* Adjust based on header/footer height */
+  padding-bottom: 2rem;
+}
+
+.container {
+  min-height: 100%;
+}
+
+/* Empty cart state - add more spacing and center vertically */
+.empty-cart-alert {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  padding: 3rem 2rem;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 @media (max-width: 768px) {
   .cart-item .row > div {
     margin-bottom: 1rem;
@@ -61,6 +84,10 @@
 
   .cart-item .col-md-2.text-end {
     text-align: left !important;
+  }
+  
+  :host {
+    min-height: calc(100vh - 150px);
   }
 }
 

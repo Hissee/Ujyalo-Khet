@@ -446,43 +446,4 @@
   }
 }
 
-/* Rating Styles */
-.product-rating-display {
-  display: flex;
-  align-items: center;
-}
-
-.rating-value {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #333;
-}
-
-.stars-display {
-  display: flex;
-  gap: 2px;
-}
-
-.user-rating-input {
-  margin-top: 0.5rem;
-}
-
-.star-rating {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.star-rating.disabled {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.star-rating i {
-  transition: all 0.2s ease;
-}
-
-.star-rating i:hover {
-  transform: scale(1.1);
-}
 

@@ -8,6 +8,53 @@
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Suppress reCAPTCHA error if script is not loaded -->
+  <script>
+    // Prevent reCAPTCHA errors if script is not loaded
+    // This must be set before Angular loads
+    (function() {
+      'use strict';
+      if (typeof window === 'undefined') return;
+      
+      // Create comprehensive reCAPTCHA stub
+      var grecaptchaStub = {
+        render: function(container, params, callback) {
+          console.warn('reCAPTCHA script not loaded. If you need reCAPTCHA, please add the script tag.');
+          var widgetId = 'recaptcha-stub-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+          if (typeof callback === 'function') {
+            setTimeout(function() { callback(widgetId); }, 0);
+          }
+          return widgetId;
+        },
+        ready: function(callback) {
+          if (typeof callback === 'function') {
+            setTimeout(callback, 0);
+          }
+        },
+        execute: function(siteKey, options) {
+          return Promise.resolve('');
+        },
+        reset: function(widgetId) {
+          // No-op
+        },
+        getResponse: function(widgetId) {
+          return '';
+        }
+      };
+      
+      // Set up stub immediately
+      if (!window.grecaptcha || typeof window.grecaptcha.render !== 'function') {
+        window.grecaptcha = grecaptchaStub;
+      }
+      
+      // Monitor and fix if something overwrites it incorrectly
+      setInterval(function() {
+        if (!window.grecaptcha || typeof window.grecaptcha.render !== 'function') {
+          window.grecaptcha = grecaptchaStub;
+        }
+      }, 100);
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

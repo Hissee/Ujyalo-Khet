@@ -14,7 +14,7 @@ export interface OrderRequest {
     street: string;
     phone?: string;
   };
-  paymentMethod: 'cash_on_delivery';
+  paymentMethod: 'cash_on_delivery' | 'esewa';
   paymentStatus?: 'pending' | 'completed' | 'failed';
 }
 

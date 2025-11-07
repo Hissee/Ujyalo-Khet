@@ -11,9 +11,9 @@
   </div>
 
   @if (cartItems.length === 0) {
-    <div class="row">
-      <div class="col-12">
-        <div class="alert alert-success text-center" role="alert">
+    <div class="row flex-grow-1 d-flex align-items-center justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="alert alert-success text-center empty-cart-alert" role="alert">
           <h4 class="alert-heading">Your cart is empty!</h4>
           <p>Start shopping to add items to your cart.</p>
           <button class="btn btn-success mt-3" (click)="continueShopping()">

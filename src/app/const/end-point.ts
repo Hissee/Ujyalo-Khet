@@ -2,8 +2,11 @@ import { environment } from '../environment/environment';
 
 // src/app/constants/endpoint.ts
 export class Endpoint {
-  public static readonly API_BASE: string = environment.apiUrl;
-  public static readonly API_VERSION: string = 'api/';
+  // Ensure API_BASE has trailing slash, or ensure proper URL construction
+  public static readonly API_BASE: string = environment.apiUrl.endsWith('/') 
+    ? environment.apiUrl.slice(0, -1) 
+    : environment.apiUrl;
+  public static readonly API_VERSION: string = '/api/';
 
   // Auth
   public static readonly SIGNUP_CUSTOMER = Endpoint.API_BASE + Endpoint.API_VERSION + 'auth/signup/customer';

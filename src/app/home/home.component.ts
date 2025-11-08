@@ -62,16 +62,32 @@ export class HomeComponent implements OnInit {
     this.loading = true;
     this.productService.listProducts().subscribe({
       next: (data: IProduct[]) => {
+        console.log('Products received from API:', data?.length || 0, 'products');
+        if (!data || data.length === 0) {
+          console.warn('No products returned from API');
+          this.categories = [];
+          this.loading = false;
+          return;
+        }
         // Group products by category
         const grouped = this.groupProductsByCategory(data);
         this.categories = grouped.map(group => ({
           ...group,
           currentSlide: 0
         }));
+        console.log('Products grouped into', this.categories.length, 'categories');
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading products:', err);
+        console.error('Error details:', {
+          status: err.status,
+          statusText: err.statusText,
+          message: err.message,
+          url: err.url
+        });
+        this.toastService.error('Failed to load products. Please try again later.');
+        this.categories = [];
         this.loading = false;
       }
     });
